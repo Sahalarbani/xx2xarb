@@ -16,7 +16,7 @@ export default function CreateSkinPage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    imageUrl: "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2670&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2670&auto=format&fit=crop",
     category: "street" as Skin['category'],
     published: true,
     downloadUrl: ""
@@ -33,7 +33,7 @@ export default function CreateSkinPage() {
     id: "PREVIEW",
     title: formData.title || "Target Asset Designation",
     description: formData.description || "Sequence briefing required. Enter asset parameters in the console to generate live preview data...",
-    imageUrl: formData.imageUrl || "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2670&auto=format&fit=crop",
+    image: formData.image || "https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=2670&auto=format&fit=crop",
     downloadUrl: formData.downloadUrl || "#",
     category: formData.category,
     author: "Active Operator",
