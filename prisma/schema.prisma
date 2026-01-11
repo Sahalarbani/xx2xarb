@@ -4,27 +4,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  url      = env("POSTGRES_PRISMA_URL") // Uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Uses a direct connection
 }
 
-model User {
-  id String @id @default(cuid())
-}
-model Skin {
-  id          String   @id @default(cuid())
-  title       String
-  category    String
-  image       String
-  description String
-  downloadUrl String
-  author      String   @default("Anonymous")
-  downloads   Int      @default(0)
-  published   Boolean  @default(true)      // <--- TAMBAHKAN BARIS INI
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-// 1. UPDATE MODEL USER (Tambahkan yang kurang saja)
+// --- MODEL USER & AUTH (Wajib untuk NextAuth) ---
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -35,22 +20,20 @@ model User {
   role          String    @default("user")
   accounts      Account[]
   sessions      Session[]
-  // ... (biarkan relation ke Skin/Post kamu tetap ada di sini)
 }
 
-// 2. TAMBAHKAN MODEL INI (Standar Wajib NextAuth)
 model Account {
   id                 String  @id @default(cuid())
   userId             String
   type               String
   provider           String
   providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
   expires_at         Int?
   token_type         String?
   scope              String?
-  id_token           String?  @db.Text
+  id_token           String? @db.Text
   session_state      String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -72,4 +55,20 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// --- MODEL APLIKASI KAMU ---
+
+model Skin {
+  id          String   @id @default(cuid())
+  title       String
+  category    String
+  image       String
+  description String
+  downloadUrl String
+  author      String   @default("Anonymous")
+  downloads   Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
