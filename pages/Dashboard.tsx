@@ -9,7 +9,7 @@ export const Dashboard: React.FC = () => {
   const [newSkin, setNewSkin] = useState({
     title: '',
     description: '',
-    imageUrl: '',
+    image: '',
     category: 'street' as Skin['category'],
     author: 'Admin',
     downloadUrl: '#'
@@ -28,7 +28,7 @@ export const Dashboard: React.FC = () => {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if(!newSkin.imageUrl) newSkin.imageUrl = 'https://picsum.photos/800/600'; // Fallback
+    if(!newSkin.image) newSkin.image = 'https://picsum.photos/800/600'; // Fallback
     
     addSkin(newSkin);
     setSkins(getSkins());
@@ -37,7 +37,7 @@ export const Dashboard: React.FC = () => {
     setNewSkin({
         title: '',
         description: '',
-        imageUrl: '',
+        image: '',
         category: 'street',
         author: 'Admin',
         downloadUrl: '#'
@@ -77,7 +77,7 @@ export const Dashboard: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-16 flex-shrink-0 bg-gray-800 rounded overflow-hidden mr-4">
-                        <img className="h-full w-full object-cover" src={skin.imageUrl} alt="" />
+                        <img className="h-full w-full object-cover" src={skin.image} alt="" />
                       </div>
                       <div className="text-sm font-medium text-white">{skin.title}</div>
                     </div>
@@ -159,8 +159,8 @@ export const Dashboard: React.FC = () => {
                     type="text" 
                     placeholder="https://..."
                     className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-accent focus:outline-none"
-                    value={newSkin.imageUrl}
-                    onChange={e => setNewSkin({...newSkin, imageUrl: e.target.value})}
+                    value={newSkin.image}
+                    onChange={e => setNewSkin({...newSkin, image: e.target.value})}
                   />
                 </div>
               </div>
