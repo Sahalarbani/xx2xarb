@@ -13,16 +13,14 @@ model User {
 }
 
 model Skin {
-	  id          String   @id @default(cuid())
-	    title       String
-	      category    String
-	        image       String
-	          description String
-	            downloadUrl String
-	              author      String   @default("Anonymous")
-	                downloads   Int      @default(0)
-	                  createdAt   DateTime @default(now())
-	                    updatedAt   DateTime @updatedAt
-	                    }
-	                    
+  id          String   @id @default(cuid())
+  title       String
+  category    String
+  image       String
+  description String
+  downloadUrl String
+  author      String   @default("Anonymous")
+  downloads   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
