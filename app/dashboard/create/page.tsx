@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useActionState, useState } from "react";
+import React, { useState } from "react";
+import { useFormState } from "react-dom";
 import { createSkin } from "@/app/lib/actions";
 import { ArrowLeft, Loader2, Monitor, Edit3, Eye, Zap, Globe, Lock } from "lucide-react";
 import Link from "next/link";
@@ -9,7 +10,7 @@ import { Skin } from "@/types";
 
 export default function CreateSkinPage() {
   const initialState = { message: null, errors: {} };
-  const [state, dispatch, isPending] = useActionState(createSkin, initialState);
+  const [state, dispatch] = useFormState(createSkin, initialState);
 
   // Form State for Live Preview
   const [formData, setFormData] = useState({
