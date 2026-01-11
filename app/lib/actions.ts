@@ -33,12 +33,11 @@ export async function createSkin(prevState: SkinFormState, formData: FormData) {
       data: {
         title,
         description,
-        imageUrl,
+        image:imageUrl,
         downloadUrl,
         category,
         published,
-        authorId: session.user.id!,
-        authorName: session.user.name || "Anonymous Operator",
+        author: session.user.name || "Anonymous Operator",
       },
     });
   } catch (error) {
