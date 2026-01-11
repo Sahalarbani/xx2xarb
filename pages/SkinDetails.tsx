@@ -52,18 +52,18 @@ export const SkinDetails: React.FC<SkinDetailsProps> = ({ id, onBack }) => {
           {/* Image Side */}
           <div className="space-y-4">
             <div className="aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-brand-accent/5">
-              <img src={skin.imageUrl} alt={skin.title} className="w-full h-full object-cover" />
+              <img src={skin.image} alt={skin.title} className="w-full h-full object-cover" />
             </div>
             <div className="grid grid-cols-3 gap-4">
                {/* Mock thumbnails */}
                <div className="aspect-video rounded-lg bg-brand-surface border border-white/10 overflow-hidden cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
-                  <img src={skin.imageUrl} className="w-full h-full object-cover grayscale hover:grayscale-0" />
+                  <img src={skin.image} className="w-full h-full object-cover grayscale hover:grayscale-0" />
                </div>
                <div className="aspect-video rounded-lg bg-brand-surface border border-white/10 overflow-hidden cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
-                  <img src={skin.imageUrl} className="w-full h-full object-cover grayscale hover:grayscale-0 scale-125" />
+                  <img src={skin.image} className="w-full h-full object-cover grayscale hover:grayscale-0 scale-125" />
                </div>
                <div className="aspect-video rounded-lg bg-brand-surface border border-white/10 overflow-hidden cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
-                  <img src={skin.imageUrl} className="w-full h-full object-cover grayscale hover:grayscale-0 scale-150" />
+                  <img src={skin.image} className="w-full h-full object-cover grayscale hover:grayscale-0 scale-150" />
                </div>
             </div>
           </div>
