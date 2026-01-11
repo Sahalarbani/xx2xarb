@@ -1,199 +1,153 @@
-import React from 'react';
-import { prisma } from '@/lib/prisma';
-import { notFound } from 'next/navigation';
-import { ArrowLeft, Download, Calendar, User, Share2, Zap, LayoutGrid } from 'lucide-react';
-import Link from 'next/link';
-import { SkinCard } from '@/components/SkinCard';
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { ArrowLeft, Download, Eye, Calendar, User, CheckCircle, XCircle, Share2 } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Metadata } from "next";
 
-interface PageProps {
+// Force dynamic rendering agar data selalu update
+export const dynamic = 'force-dynamic';
+
+interface Props {
   params: { id: string };
 }
 
-export default async function SkinDetailPage({ params }: PageProps) {
-  // In Next.js 14, params is an object, not a promise.
-  const { id } = params;
-
-  // 1. Fetch current skin using Prisma
+// Generate Metadata untuk SEO (Judul Tab Browser)
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const skin = await prisma.skin.findUnique({
-    where: { id },
+    where: { id: params.id },
   });
 
   if (!skin) {
-    notFound();
+    return { title: "Skin Not Found" };
   }
 
-  // 2. Fetch related skins (3 items, prioritized by same category)
-  let relatedSkins = await prisma.skin.findMany({
-    where: {
-      category: skin.category,
-      NOT: { id: skin.id },
-    },
-    take: 3,
-    orderBy: { createdAt: 'desc' },
+  return {
+    title: `${skin.title} - ArbSkinz`,
+    description: skin.description,
+  };
+}
+
+export default async function SkinPage({ params }: Props) {
+  const session = await auth();
+
+  const skin = await prisma.skin.findUnique({
+    where: { id: params.id },
   });
 
-  // Fallback: If category matches are insufficient, fetch latest assets
-  if (relatedSkins.length < 3) {
-    const additional = await prisma.skin.findMany({
-      where: {
-        NOT: {
-          id: { in: [skin.id, ...relatedSkins.map((s) => s.id)] },
-        },
-      },
-      take: 3 - relatedSkins.length,
-      orderBy: { createdAt: 'desc' },
-    });
-    relatedSkins = [...relatedSkins, ...additional];
-  }
+  if (!skin) return notFound();
 
-  // Map Prisma data structure to the format expected by our UI components
-  const mapToSkin = (s: any) => ({
-    ...s,
-    author: s.authorName || 'Authorized Operator',
-    downloads: 1250, // Default mock for downloads count
+  // Format tanggal biar rapi
+  const formattedDate = new Date(skin.createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
   return (
-    <div className="min-h-screen bg-brand-dark pt-28 pb-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Breadcrumb Navigation */}
+    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-12 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto">
+        {/* Tombol Kembali */}
         <Link 
-          href="/"
-          className="flex items-center gap-2 text-gray-500 hover:text-brand-accent mb-12 transition-all group font-bold uppercase text-xs tracking-[0.2em]"
+          href="/dashboard"
+          className="inline-flex items-center text-gray-400 hover:text-brand-accent transition-colors mb-8 group"
         >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Command Center
+          <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" size={20} />
+          Back to Dashboard
         </Link>
 
-        {/* Tactical Asset Display */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
-          {/* Visual Sequence */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          
+          {/* Kolom Kiri: Gambar Skin */}
           <div className="space-y-6">
-            <div className="relative group">
-               <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent to-brand-secondary opacity-20 blur group-hover:opacity-40 transition-opacity duration-1000"></div>
-               <div className="relative aspect-video w-full gaming-card-clip overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-black/50">
-                 <img 
-                   src={skin.image} 
-                   alt={skin.title} 
-                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2000ms] ease-out" 
-                 />
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
-                 
-                 {/* Corner HUD Data */}
-                 <div className="absolute top-4 right-4 p-2 bg-black/60 backdrop-blur-md border border-brand-accent/20 gaming-card-clip">
-                    <Zap size={16} className="text-brand-accent animate-pulse" />
-                 </div>
-               </div>
+            <div className="relative aspect-video w-full gaming-card-clip overflow-hidden border border-white/10 bg-white/5 group">
+              {/* PERBAIKAN DISINI: Pakai skin.image (bukan imageUrl) */}
+              <img 
+                src={skin.image} 
+                alt={skin.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              
+              <div className="absolute top-4 right-4 z-10">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                  skin.category === 'minecraft' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                  skin.category === 'mobile-legends' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                  'bg-brand-accent/20 text-brand-accent border border-brand-accent/30'
+                }`}>
+                  {skin.category}
+                </span>
+              </div>
             </div>
 
+            {/* Statistik */}
             <div className="grid grid-cols-3 gap-4">
-               {[1, 2, 3].map((i) => (
-                 <div key={i} className="aspect-video gaming-card-clip bg-white/5 border border-white/10 overflow-hidden cursor-crosshair opacity-60 hover:opacity-100 transition-all hover:border-brand-accent/40 group">
-                    <img 
-                      src={skin.image} 
-                      className={`w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ${i === 2 ? 'scale-125' : i === 3 ? 'scale-150' : ''}`} 
-                    />
-                 </div>
-               ))}
+              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center">
+                <Download className="mx-auto mb-2 text-brand-accent" size={20} />
+                <div className="text-2xl font-oxanium font-bold">{skin.downloads}</div>
+                <div className="text-xs text-gray-500 uppercase tracking-widest">Downloads</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center">
+                <Calendar className="mx-auto mb-2 text-purple-400" size={20} />
+                <div className="text-sm font-bold mt-2">{formattedDate}</div>
+                <div className="text-xs text-gray-500 uppercase tracking-widest mt-1">Released</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center">
+                <User className="mx-auto mb-2 text-blue-400" size={20} />
+                <div className="text-sm font-bold mt-2 truncate px-2">{skin.author}</div>
+                <div className="text-xs text-gray-500 uppercase tracking-widest mt-1">Creator</div>
+              </div>
             </div>
           </div>
 
-          {/* Information HUD Panel */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="px-4 py-1.5 bg-brand-accent/10 text-brand-accent border border-brand-accent/30 font-oxanium font-black text-[10px] uppercase tracking-[0.3em] gaming-card-clip">
-                {skin.category}
-              </span>
-              <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-                VERIFICATION: SUCCESS
-              </span>
-            </div>
-            
-            <h1 className="font-oxanium text-5xl md:text-7xl font-black text-white mb-8 leading-none tracking-tighter uppercase italic drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
-              {skin.title}
-            </h1>
-
-            <div className="grid grid-cols-2 gap-8 mb-10 pb-10 border-b border-white/5">
-              <div className="space-y-1">
-                <p className="text-[9px] font-black text-brand-accent uppercase tracking-widest flex items-center gap-2">
-                  <User size={12} /> DEPLOYMENT OFFICER
-                </p>
-                <p className="font-oxanium text-lg text-white font-bold">{skin.authorName || 'OPERATOR'}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[9px] font-black text-brand-accent uppercase tracking-widest flex items-center gap-2">
-                  <Calendar size={12} /> SYNC TIMESTAMP
-                </p>
-                <p className="font-oxanium text-lg text-white font-bold">
-                  {new Date(skin.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-12">
-              <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] mb-4 flex items-center gap-2">
-                <LayoutGrid size={12} className="text-brand-accent" />
-                MISSION PARAMETERS
-              </h3>
-              <p className="text-gray-400 text-lg font-light leading-relaxed max-w-xl">
-                {skin.description}
-              </p>
-            </div>
-
-            <div className="mt-auto space-y-4">
-              <div className="group relative">
-                <div className="absolute -inset-0.5 bg-brand-accent opacity-30 blur group-hover:opacity-100 transition duration-500"></div>
-                <button 
-                  onClick={() => window.open(skin.downloadUrl || '#', '_blank')}
-                  className="relative w-full bg-brand-accent text-black font-oxanium font-black text-xl py-6 px-8 flex items-center justify-center gap-4 skew-x-[-10deg] transition-all overflow-hidden"
-                >
-                  <span className="skew-x-[10deg] flex items-center gap-4">
-                    <Download size={28} strokeWidth={3} />
-                    INITIATE DOWNLOAD
-                  </span>
-                  <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+          {/* Kolom Kanan: Detail & Download */}
+          <div className="flex flex-col h-full">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-oxanium font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+                {skin.title}
+              </h1>
+              
+              <div className="flex items-center gap-4 mb-8">
+                {skin.published ? (
+                  <div className="flex items-center text-green-400 text-sm font-medium bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+                    <CheckCircle size={14} className="mr-1.5" />
+                    Public Access
+                  </div>
+                ) : (
+                  <div className="flex items-center text-yellow-400 text-sm font-medium bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">
+                    <XCircle size={14} className="mr-1.5" />
+                    Private / Draft
+                  </div>
+                )}
+                
+                <button className="flex items-center text-gray-400 hover:text-white text-sm transition-colors">
+                  <Share2 size={14} className="mr-1.5" />
+                  Share
                 </button>
               </div>
-              
-              <button className="w-full bg-white/5 border border-white/10 hover:border-brand-accent/50 text-gray-400 hover:text-white font-bold py-4 px-8 skew-x-[-10deg] transition-all flex items-center justify-center gap-2 group">
-                <span className="skew-x-[10deg] flex items-center gap-2">
-                  <Share2 size={18} />
-                  SHARE COORDINATES
-                </span>
-              </button>
+
+              <div className="prose prose-invert max-w-none mb-10">
+                <h3 className="text-lg font-oxanium font-bold text-brand-accent mb-2">DESCRIPTION</h3>
+                <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {skin.description}
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Tactical Recommendation HUD */}
-        <div className="relative pt-24 border-t border-white/5">
-          <div className="absolute top-0 left-0 w-32 h-[1px] bg-brand-accent"></div>
-          
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-16">
-             <div className="flex items-center gap-4">
-                <div className="p-3 bg-brand-secondary/10 rounded-sm">
-                  <LayoutGrid size={28} className="text-brand-secondary" />
-                </div>
-                <div>
-                   <h2 className="font-oxanium text-3xl font-black text-white uppercase tracking-tighter">
-                     TACTICAL <span className="text-brand-accent">RECOMMENDATIONS</span>
-                   </h2>
-                   <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-1">Next deployment sequences available in current sector</p>
-                </div>
-             </div>
-             <Link href="/#home" className="text-[10px] font-black text-brand-accent uppercase tracking-[0.4em] hover:text-white transition-all bg-brand-accent/5 px-4 py-2 border border-brand-accent/20 skew-x-[-12deg]">
-                <span className="skew-x-[12deg] inline-block">BROWSE ALL ASSETS →</span>
-             </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {relatedSkins.map((relatedSkin) => (
-              <SkinCard 
-                key={relatedSkin.id} 
-                skin={mapToSkin(relatedSkin) as any} 
-                href={`/skin/${relatedSkin.id}`}
-              />
-            ))}
+            <div className="mt-auto pt-8 border-t border-white/10">
+              <a 
+                href={skin.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full relative group overflow-hidden bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-bold text-xl py-5 rounded-lg transition-all flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_40px_rgba(0,240,255,0.5)]"
+              >
+                <div className="absolute inset-0 bg-white/40 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300"></div>
+                <Download className="relative z-10" strokeWidth={3} />
+                <span className="relative z-10">DOWNLOAD SKIN FILE</span>
+              </a>
+              <p className="text-center text-gray-500 text-xs mt-4">
+                By downloading, you agree to the creator&apos;s terms of use.
+              </p>
+            </div>
           </div>
         </div>
       </div>
