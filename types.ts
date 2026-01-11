@@ -2,7 +2,7 @@ export interface Skin {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  image: string;
   downloadUrl: string;
   category: string; // Prisma returns string, looser type helps compatibility
   author: string; // mapped from authorName
