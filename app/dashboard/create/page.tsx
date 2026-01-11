@@ -158,15 +158,15 @@ export default function CreateSkinPage() {
                 <div className="space-y-6 p-6 bg-black/20 rounded-xl border border-white/5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="imageUrl" className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">
+                      <label htmlFor="image" className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">
                         Visual Source (Image URL)
                       </label>
                       <input
-                        id="imageUrl"
-                        name="imageUrl"
+                        id="image"
+                        name="image"
                         type="text"
                         placeholder="https://source.com/preview.png"
-                        value={formData.imageUrl}
+                        value={formData.image}
                         onChange={handleInputChange}
                         className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white font-medium text-xs focus:border-brand-accent focus:outline-none transition-colors"
                       />
