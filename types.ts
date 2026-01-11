@@ -4,17 +4,18 @@ export interface Skin {
   description: string;
   imageUrl: string;
   downloadUrl: string;
-  category: 'racing' | 'street' | 'drift' | 'rally';
-  author: string;
+  category: string; // Prisma returns string, looser type helps compatibility
+  author: string; // mapped from authorName
   downloads: number;
-  createdAt: string;
+  createdAt: string | Date; // Allow Date objects from Prisma
+  published?: boolean;
 }
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'user';
+  role: string;
   image?: string;
 }
 

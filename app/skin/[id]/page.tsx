@@ -10,7 +10,8 @@ interface PageProps {
 }
 
 export default async function SkinDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  // In Next.js 14, params is an object, not a promise.
+  const { id } = params;
 
   // 1. Fetch current skin using Prisma
   const skin = await prisma.skin.findUnique({
@@ -57,7 +58,7 @@ export default async function SkinDetailPage({ params }: PageProps) {
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumb Navigation */}
         <Link 
-          href="/#home"
+          href="/"
           className="flex items-center gap-2 text-gray-500 hover:text-brand-accent mb-12 transition-all group font-bold uppercase text-xs tracking-[0.2em]"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />

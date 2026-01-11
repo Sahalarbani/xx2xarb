@@ -14,9 +14,10 @@ interface PageProps {
 
 export default async function DashboardPage({ searchParams }: PageProps) {
   const session = await auth();
-  const sp = await searchParams;
-  const query = sp?.q || '';
-  const currentPage = Number(sp?.page) || 1;
+  
+  // In Next.js 14, searchParams is an object, not a promise. Do not await it.
+  const query = searchParams?.q || '';
+  const currentPage = Number(searchParams?.page) || 1;
   const itemsPerPage = 10;
 
   // Build Filter

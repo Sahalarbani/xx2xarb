@@ -1,16 +1,15 @@
+"use client";
 
 import React, { useState } from 'react';
 import { User } from '../types';
-import { Menu, X, LogOut, LayoutDashboard, User as UserIcon, ShieldCheck } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import { signIn, signOut } from 'next-auth/react';
 
 interface NavbarProps {
   user: User | null;
-  onLogin: () => void;
-  onLogout: () => void;
 }
 
-// Fixed: Extracted NavLink component to prevent re-creation on every Navbar render
-// and used React.FC with NavLinkProps to properly define children prop for JSX usage.
 interface NavLinkProps {
   href: string;
   children: React.ReactNode;
@@ -18,17 +17,17 @@ interface NavLinkProps {
 }
 
 const NavLink: React.FC<NavLinkProps> = ({ href, children, icon: Icon }) => (
-  <a 
+  <Link 
     href={href} 
     className="group relative flex items-center gap-2 px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-brand-accent transition-all duration-300"
   >
     {Icon && <Icon size={16} className="group-hover:animate-pulse" />}
     {children}
     <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-accent shadow-[0_0_10px_#00f0ff] transition-all duration-300 group-hover:w-full" />
-  </a>
+  </Link>
 );
 
-export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
+export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -36,22 +35,19 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div 
-            className="flex-shrink-0 cursor-pointer group" 
-            onClick={() => window.location.hash = ''}
-          >
+          <Link href="/" className="flex-shrink-0 cursor-pointer group">
             <h1 className="font-oxanium text-3xl font-black tracking-tighter text-white transition-all group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
               ARB<span className="text-brand-accent">SKINZ</span>
             </h1>
-          </div>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:block">
             <div className="flex items-baseline space-x-2">
-              <NavLink href="#">Home</NavLink>
-              <NavLink href="#about">About</NavLink>
+              <NavLink href="/">Home</NavLink>
+              <NavLink href="/#about">About</NavLink>
               {user?.role === 'admin' && (
-                <NavLink href="#dashboard" icon={LayoutDashboard}>
+                <NavLink href="/dashboard" icon={LayoutDashboard}>
                   Dashboard
                 </NavLink>
               )}
@@ -67,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
                   <span className="text-sm font-oxanium text-white">{user.name}</span>
                 </div>
                 <button 
-                  onClick={onLogout}
+                  onClick={() => signOut()}
                   className="flex items-center gap-2 bg-red-500/5 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-sm border border-red-500/30 transition-all font-bold uppercase text-xs tracking-widest"
                 >
                   <LogOut size={14} />
@@ -76,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
               </div>
             ) : (
               <button 
-                onClick={onLogin}
+                onClick={() => signIn("google")}
                 className="group relative flex items-center gap-2 bg-brand-accent/10 hover:bg-brand-accent text-brand-accent hover:text-black px-6 py-2 border border-brand-accent/30 transition-all duration-500 font-oxanium font-bold uppercase text-sm skew-x-[-15deg] overflow-hidden"
               >
                 <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -104,16 +100,16 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
       {isOpen && (
         <div className="md:hidden bg-brand-dark/95 backdrop-blur-2xl border-b border-brand-accent/20">
           <div className="px-4 pt-2 pb-6 space-y-4">
-            <a href="#" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">Home</a>
-            <a href="#about" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">About</a>
+            <Link href="/" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">Home</Link>
+            <Link href="/#about" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">About</Link>
             {user?.role === 'admin' && (
-               <a href="#dashboard" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-brand-accent border-b border-brand-accent/10">Admin Control</a>
+               <Link href="/dashboard" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-brand-accent border-b border-brand-accent/10">Admin Control</Link>
             )}
             <div className="pt-4">
                {user ? (
-                 <button onClick={onLogout} className="w-full text-center bg-red-500/10 text-red-500 py-4 font-bold uppercase tracking-widest rounded-lg">Logout Session</button>
+                 <button onClick={() => signOut()} className="w-full text-center bg-red-500/10 text-red-500 py-4 font-bold uppercase tracking-widest rounded-lg">Logout Session</button>
                ) : (
-                 <button onClick={onLogin} className="w-full text-center bg-brand-accent text-black py-4 font-bold uppercase tracking-widest rounded-lg">Access System</button>
+                 <button onClick={() => signIn("google")} className="w-full text-center bg-brand-accent text-black py-4 font-bold uppercase tracking-widest rounded-lg">Access System</button>
                )}
             </div>
           </div>
