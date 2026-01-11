@@ -17,7 +17,7 @@ export const SkinCard: React.FC<SkinCardProps> = ({ skin, onClick, href }) => {
       {/* Image Section */}
       <div className="relative aspect-video overflow-hidden">
         <img 
-          src={skin.imageUrl} 
+          src={skin.image} 
           alt={skin.title} 
           className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
         />

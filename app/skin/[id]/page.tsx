@@ -73,7 +73,7 @@ export default async function SkinDetailPage({ params }: PageProps) {
                <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent to-brand-secondary opacity-20 blur group-hover:opacity-40 transition-opacity duration-1000"></div>
                <div className="relative aspect-video w-full gaming-card-clip overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-black/50">
                  <img 
-                   src={skin.imageUrl} 
+                   src={skin.image} 
                    alt={skin.title} 
                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2000ms] ease-out" 
                  />
