@@ -90,7 +90,7 @@ export default async function SkinDetailPage({ params }: PageProps) {
                {[1, 2, 3].map((i) => (
                  <div key={i} className="aspect-video gaming-card-clip bg-white/5 border border-white/10 overflow-hidden cursor-crosshair opacity-60 hover:opacity-100 transition-all hover:border-brand-accent/40 group">
                     <img 
-                      src={skin.imageUrl} 
+                      src={skin.image} 
                       className={`w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ${i === 2 ? 'scale-125' : i === 3 ? 'scale-150' : ''}`} 
                     />
                  </div>
