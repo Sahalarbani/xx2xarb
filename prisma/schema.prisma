@@ -11,7 +11,6 @@ datasource db {
 model User {
   id String @id @default(cuid())
 }
-
 model Skin {
   id          String   @id @default(cuid())
   title       String
@@ -21,6 +20,7 @@ model Skin {
   downloadUrl String
   author      String   @default("Anonymous")
   downloads   Int      @default(0)
+  published   Boolean  @default(true)      // <--- TAMBAHKAN BARIS INI
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
