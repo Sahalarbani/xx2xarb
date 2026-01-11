@@ -8,6 +8,8 @@ import { signIn, signOut } from 'next-auth/react';
 
 interface NavbarProps {
   user: User | null;
+  onLogin?: () => void;
+  onLogout?: () => void;
 }
 
 interface NavLinkProps {
@@ -27,8 +29,24 @@ const NavLink: React.FC<NavLinkProps> = ({ href, children, icon: Icon }) => (
   </Link>
 );
 
-export const Navbar: React.FC<NavbarProps> = ({ user }) => {
+export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogin = () => {
+    if (onLogin) {
+      onLogin();
+    } else {
+      signIn("google");
+    }
+  };
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      signOut();
+    }
+  };
 
   return (
     <nav className="fixed w-full z-[100] top-0 left-0 border-b border-white/5 bg-black/40 backdrop-blur-xl">
@@ -63,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
                   <span className="text-sm font-oxanium text-white">{user.name}</span>
                 </div>
                 <button 
-                  onClick={() => signOut()}
+                  onClick={handleLogout}
                   className="flex items-center gap-2 bg-red-500/5 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-sm border border-red-500/30 transition-all font-bold uppercase text-xs tracking-widest"
                 >
                   <LogOut size={14} />
@@ -72,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
               </div>
             ) : (
               <button 
-                onClick={() => signIn("google")}
+                onClick={handleLogin}
                 className="group relative flex items-center gap-2 bg-brand-accent/10 hover:bg-brand-accent text-brand-accent hover:text-black px-6 py-2 border border-brand-accent/30 transition-all duration-500 font-oxanium font-bold uppercase text-sm skew-x-[-15deg] overflow-hidden"
               >
                 <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -107,9 +125,9 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
             )}
             <div className="pt-4">
                {user ? (
-                 <button onClick={() => signOut()} className="w-full text-center bg-red-500/10 text-red-500 py-4 font-bold uppercase tracking-widest rounded-lg">Logout Session</button>
+                 <button onClick={handleLogout} className="w-full text-center bg-red-500/10 text-red-500 py-4 font-bold uppercase tracking-widest rounded-lg">Logout Session</button>
                ) : (
-                 <button onClick={() => signIn("google")} className="w-full text-center bg-brand-accent text-black py-4 font-bold uppercase tracking-widest rounded-lg">Access System</button>
+                 <button onClick={handleLogin} className="w-full text-center bg-brand-accent text-black py-4 font-bold uppercase tracking-widest rounded-lg">Access System</button>
                )}
             </div>
           </div>

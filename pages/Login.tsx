@@ -1,7 +1,12 @@
 import React from 'react';
 import { SignInButton } from '../components/SignInButton';
+import { User } from '../types';
 
-export const Login: React.FC = () => {
+interface LoginProps {
+  onLoginSuccess?: (user: User) => void;
+}
+
+export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-brand-dark">
        <div className="max-w-md w-full bg-brand-surface border border-white/10 rounded-2xl p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
