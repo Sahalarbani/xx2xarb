@@ -180,7 +180,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-5">
                           <div className="w-24 aspect-video rounded-md overflow-hidden border border-white/10 relative shadow-lg group-hover:border-brand-accent/40 transition-all duration-500">
-                            <img src={skin.imageUrl} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110" />
+                            <img src={skin.image} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110" />
                             <div className="absolute inset-0 bg-brand-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                           </div>
                           <div>
