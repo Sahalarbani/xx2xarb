@@ -196,26 +196,17 @@ export default function CreateSkinPage() {
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="w-full relative bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-black text-xl py-6 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-4 disabled:opacity-50 overflow-hidden group skew-x-[-10deg]"
-                >
-                  <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  <span className="skew-x-[10deg] flex items-center gap-4">
-                    {isPending ? (
-                      <>
-                        <Loader2 className="animate-spin" size={28} />
-                        UPLOADING DATA...
-                      </>
-                    ) : (
-                      <>
-                        <Zap size={28} strokeWidth={3} />
-                        FINALIZE DEPLOYMENT
-                      </>
-                    )}
-                  </span>
-                </button>
+               <button
+                 type="submit"
+                   className="w-full relative bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-bold text-xl py-6 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-4 group overflow-hidden"
+                   >
+                     <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+
+                         <span className="flex items-center gap-4 relative z-10">
+                               <Zap size={28} strokeWidth={3} />
+                                     FINALIZE DEPLOYMENT
+                                       </span>
+                                       </button>                                      
               </form>
             </div>
           </div>
