@@ -1,3 +1,21 @@
+import NextAuth, { DefaultSession } from "next-auth";
+
+// 🔥 INI KODE SAKTINYA: Kita inject 'role' ke dalam NextAuth
+declare module "next-auth" {
+  interface Session {
+    user: {
+      role?: string;
+    } & DefaultSession["user"];
+  }
+
+  interface User {
+    role?: string;
+  }
+}
+
+// --- Batas Kode Baru (Biarkan kode lama di bawah ini tetap ada) ---
+
+
 export interface Skin {
   id: string;
   title: string;
