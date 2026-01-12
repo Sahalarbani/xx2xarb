@@ -1,15 +1,9 @@
+import NextAuth from "next-auth";
 import { auth } from "./auth";
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
-  const isDashboardPage = req.nextUrl.pathname.startsWith("/dashboard");
-
-  if (isDashboardPage && !isLoggedIn) {
-    return Response.redirect(new URL("/login", req.nextUrl));
-  }
-});
+export default NextAuth(auth).auth;
 
 export const config = {
-  // Matcher for all routes except static files and images
+  // Logic matcher ini sudah benar, pertahankan
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
