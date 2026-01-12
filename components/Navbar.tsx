@@ -36,7 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
     if (onLogin) {
       onLogin();
     } else {
-      signIn("google");
+      // ✅ Login langsung ke Dashboard
+      signIn("google", { callbackUrl: "/dashboard" });
     }
   };
 
@@ -52,7 +53,6 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
     <nav className="fixed w-full z-[100] top-0 left-0 border-b border-white/5 bg-black/40 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
           <Link href="/" className="flex-shrink-0 cursor-pointer group">
             <h1 className="font-oxanium text-3xl font-black tracking-tighter text-white transition-all group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
               ARB<span className="text-brand-accent">SKINZ</span>
@@ -64,6 +64,8 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
             <div className="flex items-baseline space-x-2">
               <NavLink href="/">Home</NavLink>
               <NavLink href="/#about">About</NavLink>
+              
+              {/* ✅ FIX: Cek role 'admin' (huruf kecil) */}
               {user?.role === 'admin' && (
                 <NavLink href="/dashboard" icon={LayoutDashboard}>
                   Dashboard
@@ -120,9 +122,12 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
           <div className="px-4 pt-2 pb-6 space-y-4">
             <Link href="/" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">Home</Link>
             <Link href="/#about" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">About</Link>
+            
+            {/* ✅ FIX: Cek role 'admin' (huruf kecil) di Mobile */}
             {user?.role === 'admin' && (
                <Link href="/dashboard" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-brand-accent border-b border-brand-accent/10">Admin Control</Link>
             )}
+            
             <div className="pt-4">
                {user ? (
                  <button onClick={handleLogout} className="w-full text-center bg-red-500/10 text-red-500 py-4 font-bold uppercase tracking-widest rounded-lg">Logout Session</button>

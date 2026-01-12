@@ -8,12 +8,17 @@ import { redirect } from "next/navigation";
 
 export async function createSkin(prevState: SkinFormState, formData: FormData) {
   const session = await auth();
-  if (!session?.user) return { message: "Access Denied: Unauthorized Operator." };
+
+  // ✅ FIX: Cek Role 'admin' (huruf kecil)
+  if (!session?.user || session.user.role !== "admin") {
+    return { message: "Access Denied: Unauthorized Operator." };
+  }
 
   const validatedFields = SkinSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
-    imageUrl: formData.get("imageUrl"),
+    // ✅ FIX: Ambil field 'image' dari FormData
+    image: formData.get("image"), 
     downloadUrl: formData.get("downloadUrl"),
     category: formData.get("category"),
     published: formData.get("published") === "true",
@@ -26,14 +31,14 @@ export async function createSkin(prevState: SkinFormState, formData: FormData) {
     };
   }
 
-  const { title, description, imageUrl, downloadUrl, category, published } = validatedFields.data;
+  const { title, description, image, downloadUrl, category, published } = validatedFields.data;
 
   try {
     await prisma.skin.create({
       data: {
         title,
         description,
-        image:imageUrl,
+        image, // ✅ FIX: Masuk ke kolom 'image' di database
         downloadUrl,
         category,
         published,
@@ -52,7 +57,11 @@ export async function createSkin(prevState: SkinFormState, formData: FormData) {
 
 export async function deleteSkin(id: string) {
   const session = await auth();
-  if (!session?.user) throw new Error("Security Breach: Unauthorized Destructive Attempt.");
+  
+  // ✅ FIX: Cek Role 'admin' (huruf kecil)
+  if (!session?.user || session.user.role !== "admin") {
+    throw new Error("Security Breach: Unauthorized Destructive Attempt.");
+  }
 
   try {
     await prisma.skin.delete({
