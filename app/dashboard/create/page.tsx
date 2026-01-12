@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useFormState } from "react-dom";
 import { createSkin } from "@/app/lib/actions";
-import { ArrowLeft, Edit3, Zap, Globe, Lock, Upload, Plus, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Edit3, Zap, Globe, Lock, Upload, Link as LinkIcon, FileArchive, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { SkinCard } from "@/components/SkinCard";
 import { Skin } from "@/types";
@@ -14,7 +14,7 @@ export default function CreateSkinPage() {
   const [state, dispatch] = useFormState(createSkin, initialState);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
 
-  // ✅ STATE: Pakai 'image' (sesuai database)
+  // State Data
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -27,7 +27,7 @@ export default function CreateSkinPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    // Logic Kategori Manual
+    // Logic Kategori
     if (name === "categorySelect") {
       if (value === "custom") {
         setIsCustomCategory(true);
@@ -38,22 +38,27 @@ export default function CreateSkinPage() {
       }
       return;
     }
-
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
-  // ✅ WIDGET CLOUDINARY SAKTI (Baca dari .env)
-  const openWidget = () => {
+  // ✅ WIDGET SAKTI (SIGNED MODE)
+  const openWidget = (targetField: 'image' | 'downloadUrl') => {
+    // Tentukan jenis file yang boleh diupload
+    // Kalau 'image' -> cuma gambar. Kalau 'downloadUrl' -> bebas (auto).
+    const resourceType = targetField === 'image' ? 'image' : 'auto';
+
     const widget = (window as any).cloudinary.createUploadWidget(
       {
-        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, // Otomatis baca .env
-        uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,   // Otomatis baca .env
-        sources: ["local", "url", "camera", "image_search"], 
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+        apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY, // Pakai API Key
+        uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,
+        sources: ["local", "url", "camera", "image_search", "cloudinary"], // 'cloudinary' = Media Library
         multiple: false,
-        // 🔥 FITUR: Pilih gambar lama (Media Library)
-        showAdvancedOptions: true, 
+        resourceType: resourceType, 
         folder: "arbskin_uploads",
+        // 🔥 FITUR PREMIUM: Browse File Lama
+        showAdvancedOptions: true,
         styles: {
             palette: {
                 window: "#000000",
@@ -70,23 +75,42 @@ export default function CreateSkinPage() {
                 textDark: "#000000",
                 textLight: "#ffffff"
             },
-        }
+        },
+        // 🔒 FUNGSI TANDA TANGAN (Minta ke Backend)
+        uploadSignature: generateSignature
       },
       (error: any, result: any) => {
         if (!error && result && result.event === "success") {
-          // ✅ Simpan URL gambar ke state 'image'
-          setFormData(prev => ({ ...prev, image: result.info.secure_url }));
+          if (targetField === 'image') {
+             setFormData(prev => ({ ...prev, image: result.info.secure_url }));
+          } else {
+             setFormData(prev => ({ ...prev, downloadUrl: result.info.secure_url }));
+          }
         }
       }
     );
     widget.open();
   };
 
+  // Helper: Minta tanda tangan ke API Route yang kita buat tadi
+  const generateSignature = async (callback: Function, paramsToSign: any) => {
+    try {
+      const response = await fetch("/api/sign-cloudinary", {
+        method: "POST",
+        body: JSON.stringify({ paramsToSign }),
+      });
+      const data = await response.json();
+      callback(data.signature);
+    } catch (error) {
+      console.error("Sign failed", error);
+    }
+  };
+
   const previewSkin: Skin = {
     id: "PREVIEW",
     title: formData.title || "Target Asset Designation",
     description: formData.description || "Sequence briefing required...",
-    image: formData.image, // ✅ Pakai 'image'
+    image: formData.image,
     downloadUrl: formData.downloadUrl || "#",
     category: formData.category || "UNCLASSIFIED",
     author: "Active Operator",
@@ -123,7 +147,8 @@ export default function CreateSkinPage() {
                </div>
 
               <form action={dispatch} className="space-y-8">
-                {/* Identification */}
+                
+                {/* 1. IDENTITAS */}
                 <div className="space-y-6 p-6 bg-black/20 rounded-xl border border-white/5">
                    <div>
                     <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Asset Designation</label>
@@ -139,29 +164,17 @@ export default function CreateSkinPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Asset Classification</label>
-                      <select
-                        name="categorySelect"
-                        onChange={handleInputChange}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white font-oxanium font-bold text-sm focus:border-brand-accent focus:outline-none appearance-none uppercase tracking-widest cursor-pointer mb-2"
-                      >
+                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Classification</label>
+                      <select name="categorySelect" onChange={handleInputChange} className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white font-oxanium font-bold text-sm focus:border-brand-accent focus:outline-none uppercase tracking-widest cursor-pointer mb-2">
                         <option value="street">Street Division</option>
                         <option value="racing">Racing Division</option>
                         <option value="drift">Drift Division</option>
                         <option value="rally">Rally Division</option>
-                        <option value="custom">+ Input Manual Category</option>
+                        <option value="custom">+ Input Manual</option>
                       </select>
-
                       {isCustomCategory && (
                          <div className="relative animate-in fade-in slide-in-from-top-2">
-                            <input 
-                                type="text" 
-                                name="category"
-                                value={formData.category}
-                                onChange={handleInputChange}
-                                placeholder="TYPE CUSTOM CATEGORY..."
-                                className="w-full bg-brand-accent/10 border border-brand-accent/50 rounded-lg p-4 text-brand-accent font-black uppercase tracking-widest focus:outline-none"
-                            />
+                            <input type="text" name="category" value={formData.category} onChange={handleInputChange} placeholder="TYPE CUSTOM CATEGORY..." className="w-full bg-brand-accent/10 border border-brand-accent/50 rounded-lg p-4 text-brand-accent font-black uppercase tracking-widest focus:outline-none" />
                             <Plus size={16} className="absolute right-4 top-4 text-brand-accent" />
                          </div>
                       )}
@@ -169,16 +182,10 @@ export default function CreateSkinPage() {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Transmission Status</label>
+                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Transmission</label>
                       <div className="flex items-center gap-4 p-4 bg-black/40 border border-white/10 rounded-lg h-[58px]">
                         <input type="hidden" name="published" value={formData.published.toString()} />
-                        <button
-                          type="button"
-                          onClick={() => setFormData(p => ({ ...p, published: !p.published }))}
-                          className={`flex-grow flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-black text-[10px] uppercase tracking-widest transition-all ${
-                            formData.published ? 'bg-brand-accent/20 text-brand-accent border border-brand-accent/30' : 'bg-white/5 text-gray-500 border border-white/10'
-                          }`}
-                        >
+                        <button type="button" onClick={() => setFormData(p => ({ ...p, published: !p.published }))} className={`flex-grow flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-black text-[10px] uppercase tracking-widest transition-all ${formData.published ? 'bg-brand-accent/20 text-brand-accent border border-brand-accent/30' : 'bg-white/5 text-gray-500 border border-white/10'}`}>
                           {formData.published ? <Globe size={14} /> : <Lock size={14} />}
                           {formData.published ? 'Public Broadcast' : 'Private Encrypted'}
                         </button>
@@ -187,58 +194,37 @@ export default function CreateSkinPage() {
                   </div>
                 </div>
 
-                {/* Uplinks */}
+                {/* 2. VISUAL & PAYLOAD */}
                 <div className="space-y-6 p-6 bg-black/20 rounded-xl border border-white/5">
+                  
+                  {/* PREVIEW IMAGE */}
                   <div>
-                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source</label>
+                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source (Preview)</label>
                       <div className="flex gap-4">
-                        {/* ✅ NAME WAJIB 'image' */}
-                        <input
-                            name="image" 
-                            type="text"
-                            placeholder="Image URL..."
-                            value={formData.image}
-                            onChange={handleInputChange}
-                            className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-gray-400 font-medium text-xs focus:border-brand-accent focus:outline-none"
-                        />
-                        <button
-                            type="button"
-                            onClick={openWidget}
-                            className="bg-white text-black px-6 rounded-lg font-bold uppercase tracking-widest hover:bg-brand-accent transition-colors flex items-center gap-2"
-                        >
-                            <Upload size={16} /> Upload
+                        <input name="image" type="text" placeholder="Image URL..." value={formData.image} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-gray-400 font-medium text-xs focus:border-brand-accent focus:outline-none" />
+                        <button type="button" onClick={() => openWidget('image')} className="bg-white text-black px-6 rounded-lg font-bold uppercase tracking-widest hover:bg-brand-accent transition-colors flex items-center gap-2">
+                            <ImageIcon size={16} /> Browse
                         </button>
                       </div>
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Description</label>
-                    <textarea
-                      name="description"
-                      rows={4}
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-gray-200 focus:border-brand-accent focus:outline-none"
-                    />
+                    <textarea name="description" rows={4} value={formData.description} onChange={handleInputChange} className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-gray-200 focus:border-brand-accent focus:outline-none" />
                   </div>
 
+                  {/* DOWNLOAD LINK */}
                   <div>
-                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Download URL</label>
-                      <input
-                        name="downloadUrl"
-                        type="text"
-                        value={formData.downloadUrl}
-                        onChange={handleInputChange}
-                        className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none"
-                      />
-                      {/* ✅ TOMBOL PINTAS: Copy Link Gambar ke Download */}
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, downloadUrl: prev.image }))}
-                        className="text-[10px] font-bold text-brand-accent mt-3 hover:text-white transition-colors flex items-center gap-2 uppercase tracking-widest cursor-pointer group"
-                      >
+                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Payload (Download Link)</label>
+                      <div className="flex gap-4">
+                        <input name="downloadUrl" type="text" placeholder="Link or Upload File..." value={formData.downloadUrl} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none" />
+                        <button type="button" onClick={() => openWidget('downloadUrl')} className="bg-brand-accent/10 border border-brand-accent/50 text-brand-accent px-6 rounded-lg font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-black transition-colors flex items-center gap-2">
+                            <FileArchive size={16} /> File
+                        </button>
+                      </div>
+                      <button type="button" onClick={() => setFormData(prev => ({ ...prev, downloadUrl: prev.image }))} className="text-[10px] font-bold text-gray-500 mt-3 hover:text-brand-accent transition-colors flex items-center gap-2 uppercase tracking-widest cursor-pointer group">
                          <LinkIcon size={12} className="group-hover:rotate-45 transition-transform" />
-                         [USE PREVIEW IMAGE SOURCE]
+                         [OR USE PREVIEW IMAGE SOURCE]
                       </button>
                   </div>
                 </div>
@@ -250,10 +236,7 @@ export default function CreateSkinPage() {
                   </div>
                 )}
 
-               <button
-                 type="submit"
-                   className="w-full relative bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-bold text-xl py-6 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-4 group overflow-hidden"
-                   >
+               <button type="submit" className="w-full relative bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-bold text-xl py-6 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-4 group overflow-hidden">
                      <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                      <span className="flex items-center gap-4 relative z-10">
                          <Zap size={28} strokeWidth={3} />
@@ -264,7 +247,6 @@ export default function CreateSkinPage() {
             </div>
           </div>
 
-          {/* Preview Side */}
           <div className="lg:w-5/12">
              <div className="sticky top-28">
                 <SkinCard skin={previewSkin} />
