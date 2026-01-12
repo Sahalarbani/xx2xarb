@@ -14,7 +14,7 @@ export default function CreateSkinPage() {
   const [state, dispatch] = useFormState(createSkin, initialState);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
 
-  // ✅ STATE: Pakai 'image' (bukan imageUrl)
+  // ✅ STATE: Pakai 'image' (sesuai database)
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -43,15 +43,15 @@ export default function CreateSkinPage() {
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
-  // ✅ WIDGET CLOUDINARY SAKTI
+  // ✅ WIDGET CLOUDINARY SAKTI (Baca dari .env)
   const openWidget = () => {
     const widget = (window as any).cloudinary.createUploadWidget(
       {
-        cloudName: "ganti_nama_cloud_lu", // ⚠️ PASTIKAN INI DIGANTI
-        uploadPreset: "ganti_preset_lu",   // ⚠️ PASTIKAN INI DIGANTI
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, // Otomatis baca .env
+        uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,   // Otomatis baca .env
         sources: ["local", "url", "camera", "image_search"], 
         multiple: false,
-        // 🔥 FITUR PENTING: Tampilkan opsi file lama (Media Library)
+        // 🔥 FITUR: Pilih gambar lama (Media Library)
         showAdvancedOptions: true, 
         folder: "arbskin_uploads",
         styles: {
@@ -74,7 +74,7 @@ export default function CreateSkinPage() {
       },
       (error: any, result: any) => {
         if (!error && result && result.event === "success") {
-          // ✅ Simpan ke 'image'
+          // ✅ Simpan URL gambar ke state 'image'
           setFormData(prev => ({ ...prev, image: result.info.secure_url }));
         }
       }
@@ -192,7 +192,7 @@ export default function CreateSkinPage() {
                   <div>
                       <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source</label>
                       <div className="flex gap-4">
-                        {/* ✅ NAME DIGANTI JADI 'image' */}
+                        {/* ✅ NAME WAJIB 'image' */}
                         <input
                             name="image" 
                             type="text"
@@ -231,7 +231,7 @@ export default function CreateSkinPage() {
                         onChange={handleInputChange}
                         className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none"
                       />
-                      {/* ✅ TOMBOL COPY LINK GAMBAR KE LINK DOWNLOAD */}
+                      {/* ✅ TOMBOL PINTAS: Copy Link Gambar ke Download */}
                       <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, downloadUrl: prev.image }))}
