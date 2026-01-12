@@ -1,19 +1,18 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
-import { authConfig } from "./auth.config"; // <-- Kita import config yang tadi
+import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" }, // Pastikan pakai database strategy
-  ...authConfig, // Gabungkan settingan dari auth.config.ts
+  adapter: PrismaAdapter(prisma) as any, // <--- TAMBAHKAN 'as any' DISINI
+  session: { strategy: "database" },
+  ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
-    // Logic Tambahan: Masukkan Role User dari Database ke Session
     async session({ session, user }: any) {
-      if (session.user) {
+      if (session.user && user) {
         session.user.id = user.id;
-        session.user.role = user.role; // <-- PENTING: Ambil role ADMIN/USER
+        session.user.role = user.role;
       }
       return session;
     },
