@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useFormState } from "react-dom";
 import { createSkin } from "@/app/lib/actions";
-import { ArrowLeft, Edit3, Zap, Globe, Lock, Upload, Plus } from "lucide-react";
+import { ArrowLeft, Edit3, Zap, Globe, Lock, Upload, Plus, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 import { SkinCard } from "@/components/SkinCard";
 import { Skin } from "@/types";
@@ -43,14 +43,34 @@ export default function CreateSkinPage() {
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
-  // ✅ WIDGET CLOUDINARY
+  // ✅ WIDGET CLOUDINARY SAKTI
   const openWidget = () => {
     const widget = (window as any).cloudinary.createUploadWidget(
       {
-        cloudName: "ganti_nama_cloud_lu", // ⚠️ GANTI
-        uploadPreset: "ganti_preset_lu", // ⚠️ GANTI
-        sources: ["local", "url"],
+        cloudName: "ganti_nama_cloud_lu", // ⚠️ PASTIKAN INI DIGANTI
+        uploadPreset: "ganti_preset_lu",   // ⚠️ PASTIKAN INI DIGANTI
+        sources: ["local", "url", "camera", "image_search"], 
         multiple: false,
+        // 🔥 FITUR PENTING: Tampilkan opsi file lama (Media Library)
+        showAdvancedOptions: true, 
+        folder: "arbskin_uploads",
+        styles: {
+            palette: {
+                window: "#000000",
+                sourceBg: "#1a1a1a",
+                windowBorder: "#00f0ff",
+                tabIcon: "#00f0ff",
+                inactiveTabIcon: "#69778A",
+                menuIcons: "#00f0ff",
+                link: "#00f0ff",
+                action: "#00f0ff",
+                inProgress: "#00f0ff",
+                complete: "#33ff00",
+                error: "#cc0000",
+                textDark: "#000000",
+                textLight: "#ffffff"
+            },
+        }
       },
       (error: any, result: any) => {
         if (!error && result && result.event === "success") {
@@ -211,6 +231,15 @@ export default function CreateSkinPage() {
                         onChange={handleInputChange}
                         className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none"
                       />
+                      {/* ✅ TOMBOL COPY LINK GAMBAR KE LINK DOWNLOAD */}
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, downloadUrl: prev.image }))}
+                        className="text-[10px] font-bold text-brand-accent mt-3 hover:text-white transition-colors flex items-center gap-2 uppercase tracking-widest cursor-pointer group"
+                      >
+                         <LinkIcon size={12} className="group-hover:rotate-45 transition-transform" />
+                         [USE PREVIEW IMAGE SOURCE]
+                      </button>
                   </div>
                 </div>
 

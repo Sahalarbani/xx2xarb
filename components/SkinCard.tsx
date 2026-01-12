@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Skin } from '../types';
-import { Download } from 'lucide-react';
 import Link from 'next/link';
 
 interface SkinCardProps {
@@ -11,13 +10,21 @@ interface SkinCardProps {
   href?: string;
 }
 
+// ✅ HELPER: Fungsi ajaib buat mengecilkan gambar Cloudinary secara otomatis
+const getOptimizedUrl = (url: string) => {
+  if (!url || !url.includes("cloudinary.com")) return url;
+  // Trik: Selipkan parameter w_600 (lebar 600px), q_auto (kualitas cerdas), f_auto (format ringan)
+  // Ini bikin gambar jadi ringan banget buat preview, tapi aslinya tetap HD.
+  return url.replace("/upload/", "/upload/w_600,q_auto,f_auto/");
+};
+
 export const SkinCard: React.FC<SkinCardProps> = ({ skin, onClick, href }) => {
   const CardContent = (
     <div className="relative bg-brand-dark/40 backdrop-blur-xl gaming-card-clip border border-white/5 group-hover:border-brand-accent/30 overflow-hidden h-full flex flex-col">
       {/* Image Section */}
       <div className="relative aspect-video overflow-hidden">
         <img 
-          src={skin.image} 
+          src={getOptimizedUrl(skin.image)} // ✅ Panggil fungsi optimasi di sini
           alt={skin.title} 
           className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
         />
