@@ -1,26 +1,25 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",        // Folder App (WAJIB)
+    "./components/**/*.{js,ts,jsx,tsx,mdx}", // Folder Components (WAJIB)
+    "./lib/**/*.{js,ts,jsx,tsx,mdx}",        // Folder Lib (Jaga-jaga)
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",        // Jaga-jaga kalau pake src
   ],
   theme: {
     extend: {
-      // Anda bisa menambahkan atau memodifikasi kustomisasi tema 
-      // "Gaming Dark Neon" Anda di sini.
-      // Contoh:
       colors: {
-        'neon-green': '#39FF14',
-        'neon-blue': '#00BFFF',
-        'brand-dark': '#0d0c22',
-        'brand-light': '#1a1a3a',
+        brand: {
+          accent: "#00f0ff", 
+          dark: "#050505",   
+        },
       },
-      boxShadow: {
-        'neon-glow': '0 0 5px #39FF14, 0 0 10px #39FF14, 0 0 20px #39FF14',
+      fontFamily: {
+        oxanium: ["var(--font-oxanium)", "sans-serif"],
       },
     },
   },
   plugins: [],
-}
-export default config
+};
+export default config;
