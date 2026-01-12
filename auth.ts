@@ -1,37 +1,21 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { authConfig } from "./auth.config"; // <-- Kita import config yang tadi
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma) as any,
-  providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
-  ],
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "database" }, // Pastikan pakai database strategy
+  ...authConfig, // Gabungkan settingan dari auth.config.ts
   callbacks: {
-    async session({ session, user }:any) {
+    ...authConfig.callbacks,
+    // Logic Tambahan: Masukkan Role User dari Database ke Session
+    async session({ session, user }: any) {
       if (session.user) {
         session.user.id = user.id;
-        // Extend session with custom fields if needed, e.g. role
-        session.user.role = user.role; 
+        session.user.role = user.role; // <-- PENTING: Ambil role ADMIN/USER
       }
       return session;
     },
-    async authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-      
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login
-      }
-      return true;
-    },
   },
- // pages: {
- //   signIn: '/login',
- // },
 });

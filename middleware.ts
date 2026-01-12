@@ -1,9 +1,8 @@
 import NextAuth from "next-auth";
-import { auth } from "./auth";
+import { authConfig } from "./auth.config"; // Import yang RINGAN
 
-export default NextAuth(auth).auth;
+export default NextAuth(authConfig).auth;
 
 export const config = {
-  // Logic matcher ini sudah benar, pertahankan
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
