@@ -6,13 +6,16 @@ export const SkinSchema = z.object({
     .max(100),
   description: z.string()
     .min(10, { message: "Description must be at least 10 characters long." }),
-  imageUrl: z.string()
-    .url({ message: "Please enter a valid image URL (starting with http/https)." }),
+  
+  // ✅ FIX 1: Ganti jadi 'image' (bukan imageUrl)
+  image: z.string().min(1, { message: "Image URL is required." }),
+
   downloadUrl: z.string()
-    .url({ message: "Please enter a valid download URL." }),
-  category: z.enum(['racing', 'street', 'drift', 'rally'], {
-    errorMap: () => ({ message: "Please select a valid category." }),
-  }),
+    .min(1, { message: "Download URL is required." }), // Boleh hapus .url() kalau mau fleksibel
+    
+  // ✅ FIX 2: Ganti enum jadi string biasa (biar bisa Custom Category)
+  category: z.string().min(1, { message: "Please enter a valid category." }),
+  
   published: z.coerce.boolean(),
 });
 
@@ -20,7 +23,7 @@ export type SkinFormState = {
   errors?: {
     title?: string[];
     description?: string[];
-    imageUrl?: string[];
+    image?: string[];      // ✅ FIX 3: Ini juga ganti jadi 'image'
     downloadUrl?: string[];
     category?: string[];
     published?: string[];
