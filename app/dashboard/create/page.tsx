@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { useFormState } from "react-dom";
 import { createSkin } from "@/app/lib/actions";
-// 👇 SUDAH DITAMBAHKAN 'Plus' DI SINI
-import { ArrowLeft, Edit3, Zap, Globe, Lock, Upload, Link as LinkIcon, FileArchive, Image as ImageIcon, Plus } from "lucide-react";
+// Import Icon yang lengkap biar ga error 'Plus' lagi
+import { ArrowLeft, Edit3, Zap, Globe, Lock, Link as LinkIcon, FileArchive, Image as ImageIcon, Plus, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { SkinCard } from "@/components/SkinCard";
 import { Skin } from "@/types";
@@ -28,7 +28,7 @@ export default function CreateSkinPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    // Logic Kategori
+    // Logic Kategori Manual
     if (name === "categorySelect") {
       if (value === "custom") {
         setIsCustomCategory(true);
@@ -43,9 +43,8 @@ export default function CreateSkinPage() {
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
-  // ✅ WIDGET SAKTI (SIGNED MODE)
+  // ✅ WIDGET SAKTI (MEDIA LIBRARY PRIORITY)
   const openWidget = (targetField: 'image' | 'downloadUrl') => {
-    // Tentukan jenis file yang boleh diupload
     const resourceType = targetField === 'image' ? 'image' : 'auto';
 
     const widget = (window as any).cloudinary.createUploadWidget(
@@ -53,11 +52,13 @@ export default function CreateSkinPage() {
         cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
         apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY, 
         uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,
-        sources: ["local", "url", "camera", "image_search", "cloudinary"], 
+        // 🔥 UPDATE: 'cloudinary' ditaruh PERTAMA biar jadi tab utama (Media Library)
+        sources: ["cloudinary", "local", "url", "camera"], 
         multiple: false,
         resourceType: resourceType, 
         folder: "arbskin_uploads",
         showAdvancedOptions: true,
+        // Styling Widget biar gelap (Dark Mode)
         styles: {
             palette: {
                 window: "#000000",
@@ -75,7 +76,7 @@ export default function CreateSkinPage() {
                 textLight: "#ffffff"
             },
         },
-        // 🔒 FUNGSI TANDA TANGAN
+        // 🔒 TANDA TANGAN BACKEND
         uploadSignature: generateSignature
       },
       (error: any, result: any) => {
@@ -91,7 +92,7 @@ export default function CreateSkinPage() {
     widget.open();
   };
 
-  // Helper: Minta tanda tangan ke API Route
+  // Helper Signature
   const generateSignature = async (callback: Function, paramsToSign: any) => {
     try {
       const response = await fetch("/api/sign-cloudinary", {
@@ -116,6 +117,10 @@ export default function CreateSkinPage() {
     downloads: 0,
     createdAt: new Date().toISOString(),
   };
+
+  // 🔥 STYLE TOMBOL KONSISTEN (CYBERPUNK STYLE)
+  // Kita simpan class-nya di variabel biar gak ngetik ulang & pasti sama
+  const buttonStyle = "h-[50px] px-6 rounded-lg font-oxanium font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-3 border border-brand-accent/30 bg-brand-accent/10 text-brand-accent hover:bg-brand-accent hover:text-black hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] active:scale-95 whitespace-nowrap";
 
   return (
     <div className="min-h-screen bg-brand-dark pt-24 px-4 pb-12">
@@ -199,10 +204,13 @@ export default function CreateSkinPage() {
                   {/* PREVIEW IMAGE */}
                   <div>
                       <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source (Preview)</label>
-                      <div className="flex gap-4">
-                        <input name="image" type="text" placeholder="Image URL..." value={formData.image} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-gray-400 font-medium text-xs focus:border-brand-accent focus:outline-none" />
-                        <button type="button" onClick={() => openWidget('image')} className="bg-white text-black px-6 rounded-lg font-bold uppercase tracking-widest hover:bg-brand-accent transition-colors flex items-center gap-2">
-                            <ImageIcon size={16} /> Browse
+                      <div className="flex gap-4 items-center">
+                        <input name="image" type="text" placeholder="Image URL..." value={formData.image} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-gray-400 font-medium text-xs focus:border-brand-accent focus:outline-none h-[50px]" />
+                        
+                        {/* TOMBOL 1: MEDIA LIBRARY / BROWSE */}
+                        <button type="button" onClick={() => openWidget('image')} className={buttonStyle}>
+                            <ImageIcon size={18} /> 
+                            <span>Media Library</span>
                         </button>
                       </div>
                   </div>
@@ -215,12 +223,16 @@ export default function CreateSkinPage() {
                   {/* DOWNLOAD LINK */}
                   <div>
                       <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Payload (Download Link)</label>
-                      <div className="flex gap-4">
-                        <input name="downloadUrl" type="text" placeholder="Link or Upload File..." value={formData.downloadUrl} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none" />
-                        <button type="button" onClick={() => openWidget('downloadUrl')} className="bg-brand-accent/10 border border-brand-accent/50 text-brand-accent px-6 rounded-lg font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-black transition-colors flex items-center gap-2">
-                            <FileArchive size={16} /> File
+                      <div className="flex gap-4 items-center">
+                        <input name="downloadUrl" type="text" placeholder="Link or Upload File..." value={formData.downloadUrl} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none h-[50px]" />
+                        
+                        {/* TOMBOL 2: UPLOAD FILE */}
+                        <button type="button" onClick={() => openWidget('downloadUrl')} className={buttonStyle}>
+                            <FolderOpen size={18} />
+                            <span>Upload File</span>
                         </button>
                       </div>
+                      
                       <button type="button" onClick={() => setFormData(prev => ({ ...prev, downloadUrl: prev.image }))} className="text-[10px] font-bold text-gray-500 mt-3 hover:text-brand-accent transition-colors flex items-center gap-2 uppercase tracking-widest cursor-pointer group">
                          <LinkIcon size={12} className="group-hover:rotate-45 transition-transform" />
                          [OR USE PREVIEW IMAGE SOURCE]
