@@ -16,7 +16,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = user.id;
         // Extend session with custom fields if needed, e.g. role
-        // session.user.role = user.role; 
+        session.user.role = user.role; 
       }
       return session;
     },
