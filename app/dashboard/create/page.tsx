@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { useFormState } from "react-dom";
 import { createSkin } from "@/app/lib/actions";
-import { ArrowLeft, Edit3, Zap, Globe, Lock, Upload, Link as LinkIcon, FileArchive, Image as ImageIcon } from "lucide-react";
+// 👇 SUDAH DITAMBAHKAN 'Plus' DI SINI
+import { ArrowLeft, Edit3, Zap, Globe, Lock, Upload, Link as LinkIcon, FileArchive, Image as ImageIcon, Plus } from "lucide-react";
 import Link from "next/link";
 import { SkinCard } from "@/components/SkinCard";
 import { Skin } from "@/types";
@@ -45,19 +46,17 @@ export default function CreateSkinPage() {
   // ✅ WIDGET SAKTI (SIGNED MODE)
   const openWidget = (targetField: 'image' | 'downloadUrl') => {
     // Tentukan jenis file yang boleh diupload
-    // Kalau 'image' -> cuma gambar. Kalau 'downloadUrl' -> bebas (auto).
     const resourceType = targetField === 'image' ? 'image' : 'auto';
 
     const widget = (window as any).cloudinary.createUploadWidget(
       {
         cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-        apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY, // Pakai API Key
+        apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY, 
         uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,
-        sources: ["local", "url", "camera", "image_search", "cloudinary"], // 'cloudinary' = Media Library
+        sources: ["local", "url", "camera", "image_search", "cloudinary"], 
         multiple: false,
         resourceType: resourceType, 
         folder: "arbskin_uploads",
-        // 🔥 FITUR PREMIUM: Browse File Lama
         showAdvancedOptions: true,
         styles: {
             palette: {
@@ -76,7 +75,7 @@ export default function CreateSkinPage() {
                 textLight: "#ffffff"
             },
         },
-        // 🔒 FUNGSI TANDA TANGAN (Minta ke Backend)
+        // 🔒 FUNGSI TANDA TANGAN
         uploadSignature: generateSignature
       },
       (error: any, result: any) => {
@@ -92,7 +91,7 @@ export default function CreateSkinPage() {
     widget.open();
   };
 
-  // Helper: Minta tanda tangan ke API Route yang kita buat tadi
+  // Helper: Minta tanda tangan ke API Route
   const generateSignature = async (callback: Function, paramsToSign: any) => {
     try {
       const response = await fetch("/api/sign-cloudinary", {
