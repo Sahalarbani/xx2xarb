@@ -5,12 +5,14 @@ import './globals.css';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { auth } from '@/auth';
+// 👇 IMPORT KOMPONEN BARU
+import CookieConsent from '@/components/CookieConsent'; 
 
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
 const rajdhani = Rajdhani({ 
-  weight: ['300', '400', '600', '700'], 
-  subsets: ['latin'], 
-  variable: '--font-rajdhani' 
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-rajdhani'
 });
 const oxanium = Oxanium({ subsets: ['latin'], variable: '--font-oxanium' });
 
@@ -34,6 +36,9 @@ export default async function RootLayout({
           {children}
         </main>
         <Footer />
+        
+        {/* 👇 PASANG DI SINI AGAR MUNCUL DI SEMUA HALAMAN */}
+        <CookieConsent />
       </body>
     </html>
   );

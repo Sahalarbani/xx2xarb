@@ -1,11 +1,13 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
-import { authConfig } from "./auth.config";
+import authConfig from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma) as any, // <--- TAMBAHKAN 'as any' DISINI
+  adapter: PrismaAdapter(prisma),
   session: { strategy: "database" },
+  // 👇 INI OBAT KUATNYA BANG!
+  trustHost: true, 
   ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
