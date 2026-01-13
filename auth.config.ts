@@ -9,12 +9,19 @@ export const authConfig = {
     }),
   ],
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      // 🟢 STRATEGI AMAN:
-      // Kita return true (izinkan lewat) di sini untuk menghindari error Edge Runtime.
-      // Pengecekan keamanan 'SIAPA YANG BOLEH MASUK' dipindah ke app/dashboard/layout.tsx
-      // yang berjalan di Server (Node.js) dan aman mengakses Database.
-      return true;
+    authorized({ auth }) {
+      return true; // Sesuai strategi aman lu
+    },
+    // ✅ TAMBAHKAN INI: Biar session database lu nempel ke browser dengan kuat
+    async jwt({ token, user }: any) {
+      if (user) token.role = user.role;
+      return token;
+    },
+    async session({ session, token }: any) {
+      if (token && session.user) {
+        session.user.role = token.role;
+      }
+      return session;
     },
   },
 } satisfies NextAuthConfig;
