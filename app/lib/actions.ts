@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+// ✅ Schema Validation
 const ManualSkinSchema = z.object({
   title: z.string().min(3, "Judul minimal 3 karakter"),
   description: z.string().min(5, "Deskripsi minimal 5 karakter"),
@@ -15,13 +16,18 @@ const ManualSkinSchema = z.object({
   published: z.boolean().default(true),
 });
 
+// ---------------------------------------------------------
+// 1️⃣ CREATE SKIN (Dengan Validasi Error Spesifik)
+// ---------------------------------------------------------
 export async function createSkin(prevState: any, formData: FormData) {
   const session = await auth();
 
+  // Cek Role Admin
   if (!session?.user || session.user.role !== "admin") {
     return { message: "Access Denied: Unauthorized Operator." };
   }
 
+  // Proses Validasi
   const validatedFields = ManualSkinSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
@@ -31,8 +37,8 @@ export async function createSkin(prevState: any, formData: FormData) {
     published: formData.get("published") === "true",
   });
 
+  // Kalau Validasi Gagal, Kirim Error ke UI
   if (!validatedFields.success) {
-    // ✅ Mengirim error per kolom agar bisa ditampilkan di UI
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Data Integrity Violation: Validation Failed.",
@@ -50,15 +56,39 @@ export async function createSkin(prevState: any, formData: FormData) {
         downloadUrl,
         category,
         published,
-        author: session.user.name || "Anonymous", // ✅ Sesuai schema.prisma
+        author: session.user.name || "Anonymous", // Sesuai schema prisma lu
       },
     });
   } catch (error) {
     console.error("[DATABASE_ERROR]:", error);
-    return { message: "System Failure: Deployment to Database Failed." };
+    return { message: "System Failure: Database Connection Failed." };
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/");
   redirect("/dashboard");
+}
+
+// ---------------------------------------------------------
+// 2️⃣ DELETE SKIN (Ini yang tadi ketinggalan)
+// ---------------------------------------------------------
+export async function deleteSkin(id: string) {
+  const session = await auth();
+  
+  // Cek Role Admin
+  if (!session?.user || session.user.role !== "admin") {
+    return { message: "Security Breach: Unauthorized Destructive Attempt." };
+  }
+
+  try {
+    await prisma.skin.delete({
+      where: { id },
+    });
+    revalidatePath("/dashboard");
+    revalidatePath("/");
+    return { message: "Asset Terminated Successfully." };
+  } catch (error) {
+    console.error("[DELETE_ERROR]:", error);
+    return { message: "Operation Failed: Deletion Sequence Interrupted." };
+  }
 }
