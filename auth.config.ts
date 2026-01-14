@@ -10,9 +10,10 @@ export const authConfig = {
   ],
   callbacks: {
     authorized({ auth }) {
-      return true; // Tetap pakai strategi aman lu di layout.tsx
+      // Strategi aman lu di dashboard/layout.tsx tetap jalan
+      return true; 
     },
-    // ✅ INI JEMBATANNYA BANG BIAR COOKIE MUNCUL
+    // ✅ INI JEMBATANNYA BANG: Biar data dari Database masuk ke Cookie
     async jwt({ token, user }: any) {
       if (user) {
         token.role = user.role;
