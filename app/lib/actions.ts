@@ -110,3 +110,54 @@ export async function incrementDownload(id: string) {
     console.error("[DOWNLOAD_COUNT_ERROR]:", error);
   }
 }
+
+// ---------------------------------------------------------
+// 4️⃣ UPDATE SKIN (Buat Edit Data Lama)
+// ---------------------------------------------------------
+export async function updateSkin(id: string, prevState: any, formData: FormData) {
+  const session = await auth();
+
+  if (!session?.user || session.user.role !== "admin") {
+    return { message: "Access Denied: Unauthorized Operator." };
+  }
+
+  const validatedFields = ManualSkinSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description"),
+    image: formData.get("image"), 
+    downloadUrl: formData.get("downloadUrl"),
+    category: formData.get("category"),
+    published: formData.get("published") === "true",
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Update Failed: Validation Error.",
+    };
+  }
+
+  const { title, description, image, downloadUrl, category, published } = validatedFields.data;
+
+  try {
+    await prisma.skin.update({
+      where: { id }, // ✅ KUNCI: Pakai ID buat cari data lama
+      data: {
+        title,
+        description,
+        image,
+        downloadUrl,
+        category,
+        published,
+        // Author gak perlu diupdate biar tetep nama pembuat asli
+      },
+    });
+  } catch (error) {
+    console.error("[UPDATE_ERROR]:", error);
+    return { message: "System Failure: Update Sequence Failed." };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/");
+  redirect("/dashboard");
+}
