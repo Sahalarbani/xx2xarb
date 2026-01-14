@@ -10,11 +10,14 @@ export const authConfig = {
   ],
   callbacks: {
     authorized({ auth }) {
-      return true; // Sesuai strategi aman lu
+      // Tetap true sesuai strategi aman lu di layout.tsx
+      return true;
     },
-    // ✅ TAMBAHKAN INI: Biar session database lu nempel ke browser dengan kuat
+    // ✅ TAMBAHKAN DUA BARIS INI: Ini jembatan dari 112B ke Dashboard
     async jwt({ token, user }: any) {
-      if (user) token.role = user.role;
+      if (user) {
+        token.role = user.role;
+      }
       return token;
     },
     async session({ session, token }: any) {
