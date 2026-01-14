@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { ArrowLeft, Download, Calendar, User, CheckCircle, XCircle, Share2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Download, Calendar, User, CheckCircle, XCircle, Share2, AlertTriangle, Link as LinkIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -10,6 +10,14 @@ export const dynamic = 'force-dynamic';
 interface Props {
   params: { id: string };
 }
+
+// ✅ HELPER: Kita copy dari SkinCard tapi versi HD
+const getOptimizedUrl = (url: string) => {
+  if (!url) return "";
+  if (!url.includes("cloudinary.com")) return url;
+  // Kita ganti jadi w_1280 (HD) biar tajam tapi tetep ringan
+  return url.replace("/upload/", "/upload/w_1280,q_auto,f_auto/");
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const skin = await prisma.skin.findUnique({
@@ -39,6 +47,9 @@ export default async function SkinPage({ params }: Props) {
     day: "numeric",
   });
 
+  // Siapkan URL yang sudah dioptimasi
+  const finalImage = getOptimizedUrl(skin.image);
+
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-12 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto">
@@ -53,15 +64,16 @@ export default async function SkinPage({ params }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           
           {/* Kolom Kiri: Gambar Skin */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="relative aspect-video w-full gaming-card-clip overflow-hidden border border-white/10 bg-white/5 group shadow-2xl shadow-brand-accent/5">
               
-              {/* ✅ KEMBALI KE IMG BIASA (Solusi Anti Ribet) */}
-              {skin.image ? (
+              {/* ✅ IMG TAG DENGAN OPTIMASI (Persis SkinCard) */}
+              {finalImage ? (
                 <img 
-                  src={skin.image} 
+                  src={finalImage} 
                   alt={skin.title}
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                  referrerPolicy="no-referrer" // Anti block
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-white/5 text-gray-500">
@@ -82,6 +94,15 @@ export default async function SkinPage({ params }: Props) {
                   <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse mr-2" />
                   {skin.category}
                 </span>
+              </div>
+            </div>
+
+            {/* 🛠️ DEBUG LINK: Hapus ini nanti kalau udah fix */}
+            <div className="p-3 bg-red-900/20 border border-red-500/30 rounded text-[10px] text-red-400 font-mono break-all flex items-start gap-2">
+              <LinkIcon size={12} className="mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="font-bold text-red-300">DEBUG URL CHECK:</span><br/>
+                {skin.image || "URL KOSONG (NULL)"}
               </div>
             </div>
 
