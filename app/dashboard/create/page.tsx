@@ -1,21 +1,72 @@
 "use client";
 
 import React, { useState } from "react";
-import { useFormState } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom"; // ✅ Tambah useFormStatus
 import { createSkin } from "@/app/lib/actions";
-// ✅ FIX: Sudah ada 'Plus' dan 'FolderOpen'
-import { ArrowLeft, Edit3, Zap, Globe, Lock, Link as LinkIcon, FileArchive, Image as ImageIcon, Plus, FolderOpen } from "lucide-react";
+import { 
+  ArrowLeft, Edit3, Zap, Globe, Lock, Link as LinkIcon, 
+  ImageIcon, Plus, FolderOpen, Loader2 
+} from "lucide-react"; // ✅ Tambah Loader2
 import Link from "next/link";
 import { SkinCard } from "@/components/SkinCard";
 import { Skin } from "@/types";
 import Script from "next/script";
 
+// ----------------------------------------------------------------------
+// 1️⃣ KOMPONEN TOMBOL SUBMIT (Dipisah agar bisa baca status loading)
+// ----------------------------------------------------------------------
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button 
+      type="submit" 
+      disabled={pending}
+      className={`w-full relative bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-bold text-xl py-6 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-4 group overflow-hidden ${pending ? 'opacity-70 cursor-wait' : ''}`}
+    >
+      {/* Animasi Background (Hilang saat pending biar gak berat) */}
+      {!pending && (
+        <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+      )}
+      
+      <span className="flex items-center gap-4 relative z-10">
+        {pending ? (
+          <>
+            <Loader2 size={28} className="animate-spin" /> {/* ✅ SPINNER MUNCUL DI SINI */}
+            INITIALIZING UPLOAD...
+          </>
+        ) : (
+          <>
+            <Zap size={28} strokeWidth={3} />
+            FINALIZE DEPLOYMENT
+          </>
+        )}
+      </span>
+    </button>
+  );
+}
+
+// ----------------------------------------------------------------------
+// 2️⃣ KOMPONEN PESAN ERROR
+// ----------------------------------------------------------------------
+const ErrorMessage = ({ error }: { error?: string[] }) => (
+  error ? (
+    <p className="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-widest animate-pulse flex items-center gap-2">
+      <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span> 
+      {error[0]}
+    </p>
+  ) : null
+);
+
+// ----------------------------------------------------------------------
+// 3️⃣ MAIN PAGE COMPONENT
+// ----------------------------------------------------------------------
 export default function CreateSkinPage() {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createSkin, initialState);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
 
-  // State Data
+  // State Data Form
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -27,6 +78,8 @@ export default function CreateSkinPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    
+    // Logic khusus dropdown kategori
     if (name === "categorySelect") {
       if (value === "custom") {
         setIsCustomCategory(true);
@@ -37,25 +90,22 @@ export default function CreateSkinPage() {
       }
       return;
     }
+
     const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
   const openWidget = (targetField: 'image' | 'downloadUrl') => {
     const resourceType = targetField === 'image' ? 'image' : 'auto';
-
     const widget = (window as any).cloudinary.createUploadWidget(
       {
         cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
         apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY, 
         uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,
-        // ✅ TAB LIBRARY JADI PRIORITAS
         sources: ["cloudinary", "local", "url", "camera"], 
         multiple: false,
         resourceType: resourceType, 
         folder: "arbskin_uploads",
-        showAdvancedOptions: true,
-        search: true, // ✅ FITUR CARI FILE LAMA
         styles: {
             palette: {
                 window: "#000000",
@@ -101,6 +151,7 @@ export default function CreateSkinPage() {
     }
   };
 
+  // Preview Realtime
   const previewSkin: Skin = {
     id: "PREVIEW",
     title: formData.title || "Target Asset Designation",
@@ -126,22 +177,37 @@ export default function CreateSkinPage() {
         </Link>
 
         <div className="flex flex-col lg:flex-row gap-12">
+          {/* Form Section */}
           <div className="lg:w-7/12 space-y-8">
             <div className="bg-brand-surface border border-white/5 rounded-2xl p-10 shadow-2xl relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-1 h-full bg-brand-accent shadow-[0_0_15px_rgba(0,240,255,0.5)]"></div>
-              <div className="flex items-center justify-between mb-10">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-brand-accent/10 rounded-sm border border-brand-accent/20"><Edit3 size={24} className="text-brand-accent" /></div>
-                    <div><h1 className="text-3xl font-oxanium font-black text-white uppercase tracking-tighter">Sequence Editor</h1><p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em]">Initialize New Asset Parameters</p></div>
-                  </div>
-               </div>
+              <div className="absolute top-0 left-0 w-1 h-full bg-brand-accent shadow-[0_0_15px_rgba(0,240,255,0.5)]"></div>
+              
+              <div className="flex items-center gap-4 mb-10">
+                <div className="p-3 bg-brand-accent/10 rounded-sm border border-brand-accent/20">
+                  <Edit3 size={24} className="text-brand-accent" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-oxanium font-black text-white uppercase tracking-tighter">Sequence Editor</h1>
+                  <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em]">Initialize New Asset Parameters</p>
+                </div>
+              </div>
 
               <form action={dispatch} className="space-y-8">
+                {/* Bagian 1: Basic Info */}
                 <div className="space-y-6 p-6 bg-black/20 rounded-xl border border-white/5">
-                   <div>
+                  <div>
                     <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Asset Designation</label>
-                    <input name="title" type="text" placeholder="e.g. NEON VORTEX LIVERY" value={formData.title} onChange={handleInputChange} className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white font-oxanium font-black focus:border-brand-accent focus:outline-none uppercase tracking-widest" />
+                    <input 
+                      name="title" 
+                      type="text" 
+                      placeholder="e.g. NEON VORTEX LIVERY" 
+                      value={formData.title} 
+                      onChange={handleInputChange} 
+                      className={`w-full bg-black/40 border ${state.errors?.title ? 'border-red-500 animate-pulse' : 'border-white/10'} rounded-lg p-4 text-white font-oxanium font-black focus:border-brand-accent focus:outline-none uppercase tracking-widest transition-colors`} 
+                    />
+                    <ErrorMessage error={state.errors?.title} />
                   </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Classification</label>
@@ -152,46 +218,104 @@ export default function CreateSkinPage() {
                         <option value="rally">Rally Division</option>
                         <option value="custom">+ Input Manual</option>
                       </select>
-                      {isCustomCategory && (<div className="relative animate-in fade-in slide-in-from-top-2"><input type="text" name="category" value={formData.category} onChange={handleInputChange} placeholder="TYPE CUSTOM CATEGORY..." className="w-full bg-brand-accent/10 border border-brand-accent/50 rounded-lg p-4 text-brand-accent font-black uppercase tracking-widest focus:outline-none" /><Plus size={16} className="absolute right-4 top-4 text-brand-accent" /></div>)}
+                      
+                      {isCustomCategory && (
+                        <div className="relative animate-in fade-in slide-in-from-top-2">
+                          <input 
+                            type="text" 
+                            name="category" 
+                            value={formData.category} 
+                            onChange={handleInputChange} 
+                            placeholder="TYPE CUSTOM..." 
+                            className={`w-full bg-brand-accent/10 border ${state.errors?.category ? 'border-red-500' : 'border-brand-accent/50'} rounded-lg p-4 text-brand-accent font-black uppercase tracking-widest focus:outline-none`} 
+                          />
+                          <Plus size={16} className="absolute right-4 top-4 text-brand-accent" />
+                        </div>
+                      )}
                       {!isCustomCategory && <input type="hidden" name="category" value={formData.category} />}
+                      <ErrorMessage error={state.errors?.category} />
                     </div>
+
                     <div>
                       <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Transmission</label>
                       <div className="flex items-center gap-4 p-4 bg-black/40 border border-white/10 rounded-lg h-[58px]">
                         <input type="hidden" name="published" value={formData.published.toString()} />
                         <button type="button" onClick={() => setFormData(p => ({ ...p, published: !p.published }))} className={`flex-grow flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-black text-[10px] uppercase tracking-widest transition-all ${formData.published ? 'bg-brand-accent/20 text-brand-accent border border-brand-accent/30' : 'bg-white/5 text-gray-500 border border-white/10'}`}>
-                          {formData.published ? <Globe size={14} /> : <Lock size={14} />} {formData.published ? 'Public Broadcast' : 'Private Encrypted'}
+                          {formData.published ? <Globe size={14} /> : <Lock size={14} />} {formData.published ? 'Public Broadcast' : 'Private'}
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
+                {/* Bagian 2: Media Info */}
                 <div className="space-y-6 p-6 bg-black/20 rounded-xl border border-white/5">
                   <div>
-                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source (Preview)</label>
-                      <div className="flex gap-4 items-center">
-                        <input name="image" type="text" placeholder="Image URL..." value={formData.image} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-gray-400 font-medium text-xs focus:border-brand-accent focus:outline-none h-[50px]" />
-                        <button type="button" onClick={() => openWidget('image')} className={buttonStyle}><ImageIcon size={18} /> <span>Media Library</span></button>
-                      </div>
+                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source (Preview)</label>
+                    <div className="flex gap-4 items-center">
+                      <input 
+                        name="image" 
+                        type="text" 
+                        placeholder="URL (https://...)" 
+                        value={formData.image} 
+                        onChange={handleInputChange} 
+                        className={`flex-grow bg-black/40 border ${state.errors?.image ? 'border-red-500' : 'border-white/10'} rounded-lg p-4 text-gray-400 font-medium text-xs focus:border-brand-accent focus:outline-none h-[50px]`} 
+                      />
+                      <button type="button" onClick={() => openWidget('image')} className={buttonStyle}><ImageIcon size={18} /> <span className="hidden sm:inline">LIBRARY</span></button>
+                    </div>
+                    <ErrorMessage error={state.errors?.image} />
                   </div>
-                  <div><label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Description</label><textarea name="description" rows={4} value={formData.description} onChange={handleInputChange} className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-gray-200 focus:border-brand-accent focus:outline-none" /></div>
+
                   <div>
-                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Payload (Download Link)</label>
-                      <div className="flex gap-4 items-center">
-                        <input name="downloadUrl" type="text" placeholder="Link or Upload File..." value={formData.downloadUrl} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none h-[50px]" />
-                        <button type="button" onClick={() => openWidget('downloadUrl')} className={buttonStyle}><FolderOpen size={18} /><span>Upload File</span></button>
-                      </div>
-                      <button type="button" onClick={() => setFormData(prev => ({ ...prev, downloadUrl: prev.image }))} className="text-[10px] font-bold text-gray-500 mt-3 hover:text-brand-accent transition-colors flex items-center gap-2 uppercase tracking-widest cursor-pointer group"><LinkIcon size={12} className="group-hover:rotate-45 transition-transform" />[OR USE PREVIEW IMAGE SOURCE]</button>
+                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Description</label>
+                    <textarea 
+                      name="description" 
+                      rows={4} 
+                      value={formData.description} 
+                      onChange={handleInputChange} 
+                      className={`w-full bg-black/40 border ${state.errors?.description ? 'border-red-500' : 'border-white/10'} rounded-lg p-4 text-gray-200 focus:border-brand-accent focus:outline-none`} 
+                    />
+                    <ErrorMessage error={state.errors?.description} />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Payload (Download Link)</label>
+                    <div className="flex gap-4 items-center">
+                      <input 
+                        name="downloadUrl" 
+                        type="text" 
+                        placeholder="Link (https://...)" 
+                        value={formData.downloadUrl} 
+                        onChange={handleInputChange} 
+                        className={`flex-grow bg-black/40 border ${state.errors?.downloadUrl ? 'border-red-500' : 'border-white/10'} rounded-lg p-4 text-white focus:border-brand-accent focus:outline-none h-[50px]`} 
+                      />
+                      <button type="button" onClick={() => openWidget('downloadUrl')} className={buttonStyle}><FolderOpen size={18} /> <span className="hidden sm:inline">UPLOAD</span></button>
+                    </div>
+                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, downloadUrl: prev.image }))} className="text-[10px] font-bold text-gray-500 mt-3 hover:text-brand-accent transition-colors flex items-center gap-2 uppercase tracking-widest cursor-pointer group"><LinkIcon size={12} className="group-hover:rotate-45 transition-transform" />[OR USE PREVIEW IMAGE SOURCE]</button>
+                    <ErrorMessage error={state.errors?.downloadUrl} />
                   </div>
                 </div>
 
-                {state.message && (<div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>{state.message}</div>)}
-               <button type="submit" className="w-full relative bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-bold text-xl py-6 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-4 group overflow-hidden"><div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div><span className="flex items-center gap-4 relative z-10"><Zap size={28} strokeWidth={3} />FINALIZE DEPLOYMENT</span></button>                                      
+                {/* Pesan Error Global */}
+                {state.message && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                    {state.message}
+                  </div>
+                )}
+                
+                {/* ✅ Ganti Button biasa dengan SubmitButton */}
+                <SubmitButton />                                      
               </form>
             </div>
           </div>
-          <div className="lg:w-5/12"><div className="sticky top-28"><SkinCard skin={previewSkin} /></div></div>
+
+          {/* Preview Section */}
+          <div className="lg:w-5/12">
+            <div className="sticky top-28">
+              <SkinCard skin={previewSkin} />
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,23 +1,30 @@
 "use server";
 
 import { auth } from "@/auth";
-import { SkinSchema, SkinFormState } from "@/lib/definitions";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
-export async function createSkin(prevState: SkinFormState, formData: FormData) {
+const ManualSkinSchema = z.object({
+  title: z.string().min(3, "Judul minimal 3 karakter"),
+  description: z.string().min(5, "Deskripsi minimal 5 karakter"),
+  image: z.string().url("URL Gambar harus valid (https://...)"),
+  downloadUrl: z.string().url("URL Download harus valid (https://...)"),
+  category: z.string().min(1, "Pilih salah satu kategori"),
+  published: z.boolean().default(true),
+});
+
+export async function createSkin(prevState: any, formData: FormData) {
   const session = await auth();
 
-  // ✅ FIX: Cek Role 'admin' (huruf kecil)
   if (!session?.user || session.user.role !== "admin") {
     return { message: "Access Denied: Unauthorized Operator." };
   }
 
-  const validatedFields = SkinSchema.safeParse({
+  const validatedFields = ManualSkinSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
-    // ✅ FIX: Ambil field 'image' dari FormData
     image: formData.get("image"), 
     downloadUrl: formData.get("downloadUrl"),
     category: formData.get("category"),
@@ -25,6 +32,7 @@ export async function createSkin(prevState: SkinFormState, formData: FormData) {
   });
 
   if (!validatedFields.success) {
+    // ✅ Mengirim error per kolom agar bisa ditampilkan di UI
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Data Integrity Violation: Validation Failed.",
@@ -38,40 +46,19 @@ export async function createSkin(prevState: SkinFormState, formData: FormData) {
       data: {
         title,
         description,
-        image, // ✅ FIX: Masuk ke kolom 'image' di database
+        image,
         downloadUrl,
         category,
         published,
-        author: session.user.name || "Anonymous Operator",
+        author: session.user.name || "Anonymous", // ✅ Sesuai schema.prisma
       },
     });
   } catch (error) {
     console.error("[DATABASE_ERROR]:", error);
-    return { message: "System Failure: Deployment to Matrix Failed." };
+    return { message: "System Failure: Deployment to Database Failed." };
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/");
   redirect("/dashboard");
-}
-
-export async function deleteSkin(id: string) {
-  const session = await auth();
-  
-  // ✅ FIX: Cek Role 'admin' (huruf kecil)
-  if (!session?.user || session.user.role !== "admin") {
-    throw new Error("Security Breach: Unauthorized Destructive Attempt.");
-  }
-
-  try {
-    await prisma.skin.delete({
-      where: { id },
-    });
-    revalidatePath("/dashboard");
-    revalidatePath("/");
-    return { message: "Asset Terminated Successfully." };
-  } catch (error) {
-    console.error("[DATABASE_ERROR]:", error);
-    return { message: "Operation Failed: Deletion Sequence Interrupted." };
-  }
 }
