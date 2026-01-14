@@ -4,7 +4,7 @@ import { ArrowLeft, Download, Calendar, User, CheckCircle, XCircle, Share2 } fro
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import Image from "next/image"; // ✅ Import Next Image
+import Image from "next/image"; // ✅ Kita pake komponen Canggih Next.js
 
 export const dynamic = 'force-dynamic';
 
@@ -53,18 +53,23 @@ export default async function SkinPage({ params }: Props) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           
-          {/* Kolom Kiri: Gambar Skin */}
+          {/* Kolom Kiri: Gambar Skin (PREMIUM DISPLAY) */}
           <div className="space-y-6">
             <div className="relative aspect-video w-full gaming-card-clip overflow-hidden border border-white/10 bg-white/5 group shadow-2xl shadow-brand-accent/5">
-              {/* ✅ UPDATE: Pakai Next Image dengan prop 'fill' */}
+              
+              {/* ✅ FIX UTAMA: Menggunakan Next Image + Fill */}
+              {/* Kita tidak pakai getOptimizedUrl disini agar gambarnya Full HD (bukan w_600) */}
               <Image 
                 src={skin.image} 
                 alt={skin.title}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                priority // Biar loadingnya prioritas (LCP bagus)
+                className="object-cover transition-transform duration-700 hover:scale-105"
+                priority // Agar loading instan
               />
+              
+              {/* Overlay Gradients kayak di SkinCard */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 pointer-events-none" />
               
               <div className="absolute top-4 right-4 z-10">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md border ${
@@ -72,6 +77,7 @@ export default async function SkinPage({ params }: Props) {
                   skin.category === 'mobile-legends' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
                   'bg-brand-accent/20 text-brand-accent border-brand-accent/30'
                 }`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse mr-2" />
                   {skin.category}
                 </span>
               </div>
@@ -79,28 +85,28 @@ export default async function SkinPage({ params }: Props) {
 
             {/* Statistik */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center hover:border-brand-accent/30 transition-colors">
-                <Download className="mx-auto mb-2 text-brand-accent" size={20} />
+              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center hover:border-brand-accent/30 transition-colors group">
+                <Download className="mx-auto mb-2 text-brand-accent group-hover:scale-110 transition-transform" size={20} />
                 <div className="text-2xl font-oxanium font-bold">{skin.downloads}</div>
                 <div className="text-xs text-gray-500 uppercase tracking-widest">Downloads</div>
               </div>
-              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center hover:border-purple-500/30 transition-colors">
-                <Calendar className="mx-auto mb-2 text-purple-400" size={20} />
+              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center hover:border-purple-500/30 transition-colors group">
+                <Calendar className="mx-auto mb-2 text-purple-400 group-hover:scale-110 transition-transform" size={20} />
                 <div className="text-sm font-bold mt-2">{formattedDate}</div>
                 <div className="text-xs text-gray-500 uppercase tracking-widest mt-1">Released</div>
               </div>
-              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center hover:border-blue-500/30 transition-colors">
-                <User className="mx-auto mb-2 text-blue-400" size={20} />
+              <div className="bg-white/5 border border-white/10 p-4 rounded-lg text-center hover:border-blue-500/30 transition-colors group">
+                <User className="mx-auto mb-2 text-blue-400 group-hover:scale-110 transition-transform" size={20} />
                 <div className="text-sm font-bold mt-2 truncate px-2">{skin.author}</div>
                 <div className="text-xs text-gray-500 uppercase tracking-widest mt-1">Creator</div>
               </div>
             </div>
           </div>
 
-          {/* Kolom Kanan: Detail */}
+          {/* Kolom Kanan: Detail & Action */}
           <div className="flex flex-col h-full">
             <div>
-              <h1 className="text-4xl md:text-5xl font-oxanium font-bold mb-4 text-white">
+              <h1 className="text-4xl md:text-5xl font-oxanium font-bold mb-4 text-white uppercase tracking-tight">
                 {skin.title}
               </h1>
               
@@ -116,11 +122,18 @@ export default async function SkinPage({ params }: Props) {
                     Private / Draft
                   </div>
                 )}
+                
+                <button className="flex items-center text-gray-400 hover:text-white text-sm transition-colors uppercase tracking-wider text-xs font-bold">
+                  <Share2 size={14} className="mr-1.5" />
+                  Share Uplink
+                </button>
               </div>
 
               <div className="prose prose-invert max-w-none mb-10">
-                <h3 className="text-lg font-oxanium font-bold text-brand-accent mb-2 tracking-widest border-b border-white/10 pb-2 inline-block">DESCRIPTION</h3>
-                <p className="text-gray-300 leading-relaxed whitespace-pre-wrap mt-4">
+                <h3 className="text-xs font-oxanium font-bold text-brand-accent mb-4 tracking-[0.2em] border-b border-brand-accent/20 pb-2 inline-block">
+                  MISSION BRIEFING / DESCRIPTION
+                </h3>
+                <p className="text-gray-300 leading-relaxed whitespace-pre-wrap font-light text-sm md:text-base">
                   {skin.description}
                 </p>
               </div>
@@ -135,9 +148,9 @@ export default async function SkinPage({ params }: Props) {
               >
                 <div className="absolute inset-0 bg-white/40 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300"></div>
                 <Download className="relative z-10" strokeWidth={3} />
-                <span className="relative z-10">DOWNLOAD SKIN FILE</span>
+                <span className="relative z-10">INITIATE DOWNLOAD SEQUENCE</span>
               </a>
-              <p className="text-center text-gray-500 text-xs mt-4">
+              <p className="text-center text-gray-500 text-[10px] mt-4 uppercase tracking-widest">
                 By downloading, you agree to the creator&apos;s terms of use.
               </p>
             </div>
