@@ -17,7 +17,7 @@ const ManualSkinSchema = z.object({
 });
 
 // ---------------------------------------------------------
-// 1️⃣ CREATE SKIN (Dengan Validasi Error Spesifik)
+// 1️⃣ CREATE SKIN (Upload Baru)
 // ---------------------------------------------------------
 export async function createSkin(prevState: any, formData: FormData) {
   const session = await auth();
@@ -70,7 +70,7 @@ export async function createSkin(prevState: any, formData: FormData) {
 }
 
 // ---------------------------------------------------------
-// 2️⃣ DELETE SKIN (Ini yang tadi ketinggalan)
+// 2️⃣ DELETE SKIN (Hapus Data)
 // ---------------------------------------------------------
 export async function deleteSkin(id: string) {
   const session = await auth();
@@ -90,5 +90,23 @@ export async function deleteSkin(id: string) {
   } catch (error) {
     console.error("[DELETE_ERROR]:", error);
     return { message: "Operation Failed: Deletion Sequence Interrupted." };
+  }
+}
+
+// ---------------------------------------------------------
+// 3️⃣ INCREMENT DOWNLOAD (Counter Download Otomatis)
+// ---------------------------------------------------------
+export async function incrementDownload(id: string) {
+  try {
+    await prisma.skin.update({
+      where: { id },
+      data: { downloads: { increment: 1 } },
+    });
+    // Refresh semua halaman biar angkanya update real-time
+    revalidatePath("/"); 
+    revalidatePath(`/skin/${id}`);
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("[DOWNLOAD_COUNT_ERROR]:", error);
   }
 }
