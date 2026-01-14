@@ -1,10 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { ArrowLeft, Download, Calendar, User, CheckCircle, XCircle, Share2 } from "lucide-react";
+import { ArrowLeft, Download, Calendar, User, CheckCircle, XCircle, Share2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import Image from "next/image"; // ✅ Kita pake komponen Canggih Next.js
 
 export const dynamic = 'force-dynamic';
 
@@ -53,22 +52,25 @@ export default async function SkinPage({ params }: Props) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           
-          {/* Kolom Kiri: Gambar Skin (PREMIUM DISPLAY) */}
+          {/* Kolom Kiri: Gambar Skin */}
           <div className="space-y-6">
             <div className="relative aspect-video w-full gaming-card-clip overflow-hidden border border-white/10 bg-white/5 group shadow-2xl shadow-brand-accent/5">
               
-              {/* ✅ FIX UTAMA: Menggunakan Next Image + Fill */}
-              {/* Kita tidak pakai getOptimizedUrl disini agar gambarnya Full HD (bukan w_600) */}
-              <Image 
-                src={skin.image} 
-                alt={skin.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover transition-transform duration-700 hover:scale-105"
-                priority // Agar loading instan
-              />
+              {/* ✅ KEMBALI KE IMG BIASA (Solusi Anti Ribet) */}
+              {skin.image ? (
+                <img 
+                  src={skin.image} 
+                  alt={skin.title}
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-white/5 text-gray-500">
+                   <AlertTriangle size={32} />
+                   <span className="ml-2">No Visual Source</span>
+                </div>
+              )}
               
-              {/* Overlay Gradients kayak di SkinCard */}
+              {/* Overlay Gradients */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 pointer-events-none" />
               
               <div className="absolute top-4 right-4 z-10">
