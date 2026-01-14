@@ -10,10 +10,9 @@ export const authConfig = {
   ],
   callbacks: {
     authorized({ auth }) {
-      // Tetap true sesuai strategi aman lu di layout.tsx
-      return true;
+      return true; // Tetap pakai strategi aman lu di layout.tsx
     },
-    // ✅ TAMBAHKAN DUA BARIS INI: Ini jembatan dari 112B ke Dashboard
+    // ✅ INI JEMBATANNYA BANG BIAR COOKIE MUNCUL
     async jwt({ token, user }: any) {
       if (user) {
         token.role = user.role;
