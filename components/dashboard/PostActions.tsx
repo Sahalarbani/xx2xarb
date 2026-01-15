@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Trash2, Edit3, Loader2 } from 'lucide-react';
 import { deleteSkin } from '@/app/lib/actions';
+import Link from 'next/link'; // ✅ WAJIB IMPORT INI
 
 interface PostActionsProps {
   id: string;
@@ -26,12 +27,14 @@ export const PostActions: React.FC<PostActionsProps> = ({ id }) => {
 
   return (
     <div className="flex items-center justify-end gap-3">
-      <button 
-        className="p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all rounded-sm"
+      {/* ✅ FIX: Ganti Button jadi Link */}
+      <Link 
+        href={`/dashboard/edit/${id}`}
+        className="p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all rounded-sm flex items-center justify-center"
         title="Edit Parameters"
       >
         <Edit3 size={16} />
-      </button>
+      </Link>
       
       <button 
         onClick={handleDelete}
