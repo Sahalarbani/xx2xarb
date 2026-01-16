@@ -9,11 +9,11 @@ cloudinary.config({
 
 export async function GET() {
   try {
-    // Ambil 50 gambar terbaru dari folder arbskin_uploads
+    // ✅ UPDATE: Gw naikin max_results jadi 500 (Maksimal Cloudinary)
     const results = await cloudinary.api.resources({
       type: "upload",
-      prefix: "arbskin_uploads", // Sesuaikan nama folder lu
-      max_results: 50,
+      prefix: "arbskin_uploads", 
+      max_results: 500, 
       direction: "desc",
     });
 
