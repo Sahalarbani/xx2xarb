@@ -4,23 +4,62 @@ import { SkinCard } from '@/components/SkinCard';
 import { Search, Zap, Crosshair } from 'lucide-react';
 import Link from 'next/link';
 
+// ✅ WAJIB: Biar halaman selalu update kalau ada kategori baru
+export const dynamic = "force-dynamic";
+
 export default async function HomePage({ searchParams }: { searchParams: { q?: string; category?: string } }) {
   const query = searchParams?.q || '';
-  const category = searchParams?.category || undefined;
+  // Ubah undefined jadi 'ALL' biar gampang dicocokin
+  const categoryFilter = searchParams?.category || 'ALL';
 
-  // Fetch published skins from Database
+  // ---------------------------------------------------------
+  // 1️⃣ LOGIKA DINAMIS: Ambil Kategori Aktif dari Database
+  // ---------------------------------------------------------
+  const dbCategories = await prisma.skin.findMany({
+    where: { published: true },
+    select: { category: true },
+    distinct: ["category"], // Ambil yang unik aja
+  });
+
+  // Gabungin 'ALL' + Kategori dari DB (Diurutkan A-Z)
+  const allCategories = [
+    "ALL",
+    ...dbCategories
+      .map((c) => c.category)
+      .filter(Boolean)
+      .sort()
+  ];
+
+  // ---------------------------------------------------------
+  // 2️⃣ QUERY DATA SKIN
+  // ---------------------------------------------------------
+  const whereCondition: any = {
+    published: true,
+    AND: [
+      {
+        OR: [
+          { title: { contains: query, mode: "insensitive" } },
+          { description: { contains: query, mode: "insensitive" } },
+        ],
+      },
+    ],
+  };
+
+  // Filter kategori (Kecuali kalau milih ALL)
+  if (categoryFilter !== 'ALL') {
+    whereCondition.AND.push({
+      category: { equals: categoryFilter, mode: "insensitive" },
+    });
+  }
+
   const skins = await prisma.skin.findMany({
-    where: {
-      published: true,
-      title: { contains: query, mode: 'insensitive' },
-      category: category ? { equals: category } : undefined,
-    },
+    where: whereCondition,
     orderBy: { createdAt: 'desc' },
   });
 
   return (
     <div className="min-h-screen">
-      {/* 2025 Next-Gen Hero Section */}
+      {/* 2025 Next-Gen Hero Section (DESAIN LU YANG KEREN 🔥) */}
       <div className="relative h-[85vh] flex items-center justify-center overflow-hidden">
         {/* Background Image Layer */}
         <div 
@@ -87,24 +126,27 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
       <div id="gallery" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-brand-accent/50 to-transparent"></div>
         
-        {/* Filters */}
+        {/* ✅ DYNAMIC FILTERS (OTAK BARU) */}
         <div className="flex flex-wrap justify-center gap-4 mb-20">
-          <Link href="/" className={`px-8 py-3 font-oxanium font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 skew-x-[-15deg] border ${!category ? 'bg-brand-accent text-black border-brand-accent' : 'bg-brand-surface/50 text-gray-500 border-white/5'}`}>
-             <span className="inline-block skew-x-[15deg]">ALL</span>
-          </Link>
-          {['racing', 'street', 'drift', 'rally'].map((cat) => (
-            <Link
-              key={cat}
-              href={`/?category=${cat}`}
-              className={`relative px-8 py-3 font-oxanium font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 skew-x-[-15deg] ${
-                category === cat 
-                  ? 'bg-brand-accent text-black shadow-[0_0_25px_rgba(0,240,255,0.4)] border-brand-accent' 
-                  : 'bg-brand-surface/50 text-gray-500 border border-white/5 hover:border-brand-accent/50 hover:text-brand-accent'
-              } border`}
-            >
-              <span className="inline-block skew-x-[15deg]">{cat}</span>
-            </Link>
-          ))}
+          {allCategories.map((cat) => {
+            // Cek apakah tombol ini lagi aktif (case-insensitive)
+            const isActive = categoryFilter.toUpperCase() === cat.toUpperCase();
+            
+            return (
+              <Link
+                key={cat}
+                href={`/?category=${cat === 'ALL' ? '' : cat}&q=${query}`} // Kalau ALL, kosongin query category
+                className={`relative px-8 py-3 font-oxanium font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 skew-x-[-15deg] border
+                  ${isActive 
+                    ? 'bg-brand-accent text-black shadow-[0_0_25px_rgba(0,240,255,0.4)] border-brand-accent' 
+                    : 'bg-brand-surface/50 text-gray-500 border-white/5 hover:border-brand-accent/50 hover:text-brand-accent'
+                  }
+                `}
+              >
+                <span className="inline-block skew-x-[15deg]">{cat}</span>
+              </Link>
+            );
+          })}
         </div>
 
         {skins.length === 0 ? (
