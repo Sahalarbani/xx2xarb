@@ -72,3 +72,12 @@ model Skin {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+// ... (Kode model User, Account, Skin yang lama biarin aja)
+
+// --- TAMBAHAN BARU: MODEL PRESET (Paste di paling bawah) ---
+model DescriptionPreset {
+  id        String   @id @default(cuid())
+  name      String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}

@@ -1,19 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { useFormState, useFormStatus } from "react-dom"; 
+import { useFormState, useFormStatus } from "react-dom";
 import { createSkin } from "@/app/lib/actions";
-import { 
-  ArrowLeft, Edit3, Zap, Globe, Lock, Link as LinkIcon, 
-  ImageIcon, Plus, FolderOpen, Loader2 
-} from "lucide-react"; 
+import { ArrowLeft, Edit3, Zap, Globe, Lock, Link as LinkIcon, ImageIcon, Plus, FolderOpen, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { SkinCard } from "@/components/SkinCard";
 import { Skin } from "@/types";
 import Script from "next/script";
-import ImageGalleryModal from "@/components/ImageGalleryModal"; // ✅ IMPORT MODAL BARU
+import ImageGalleryModal from "@/components/ImageGalleryModal";
+import PresetSelector from "@/components/PresetSelector"; // ✅ IMPORT PRESET
 
-// --- SUBMIT BUTTON ---
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -26,7 +23,6 @@ function SubmitButton() {
   );
 }
 
-// --- ERROR MESSAGE ---
 const ErrorMessage = ({ error }: { error?: string[] }) => (
   error ? <p className="mt-2 text-[10px] font-bold text-red-500 uppercase tracking-widest animate-pulse flex items-center gap-2"><span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span> {error[0]}</p> : null
 );
@@ -35,8 +31,6 @@ export default function CreateSkinPage() {
   const initialState = { message: null, errors: {} };
   const [state, dispatch] = useFormState(createSkin, initialState);
   const [isCustomCategory, setIsCustomCategory] = useState(false);
-  
-  // ✅ STATE UNTUK MODAL GALERI
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [targetField, setTargetField] = useState<'image' | 'downloadUrl'>('image');
 
@@ -48,7 +42,7 @@ export default function CreateSkinPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (name === "categorySelect") {
-      if (value === "custom") { setIsCustomCategory(true); setFormData(p => ({ ...p, category: "" })); } 
+      if (value === "custom") { setIsCustomCategory(true); setFormData(p => ({ ...p, category: "" })); }
       else { setIsCustomCategory(false); setFormData(p => ({ ...p, category: value })); }
       return;
     }
@@ -56,33 +50,26 @@ export default function CreateSkinPage() {
     setFormData(prev => ({ ...prev, [name]: val }));
   };
 
-  // ✅ BUKA WIDGET UPLOAD (Cuma buat Upload Baru)
   const openUploadWidget = (field: 'image' | 'downloadUrl') => {
     const widget = (window as any).cloudinary.createUploadWidget(
       {
         cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-        apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY, 
+        apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
         uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_PRESET,
-        sources: ["local", "url", "camera"], // ❌ Kita hapus 'cloudinary' dari sini biar gak bingung
+        sources: ["local", "url", "camera"],
         multiple: false,
-        resourceType: field === 'image' ? 'image' : 'auto', 
+        resourceType: field === 'image' ? 'image' : 'auto',
         folder: "arbskin_uploads",
         styles: { palette: { window: "#000000", sourceBg: "#1a1a1a", windowBorder: "#00f0ff", tabIcon: "#00f0ff", inactiveTabIcon: "#69778A", menuIcons: "#00f0ff", link: "#00f0ff", action: "#00f0ff", inProgress: "#00f0ff", complete: "#33ff00", error: "#cc0000", textDark: "#000000", textLight: "#ffffff" } },
       },
       (error: any, result: any) => {
-        if (!error && result && result.event === "success") {
-           setFormData(prev => ({ ...prev, [field]: result.info.secure_url }));
-        }
+        if (!error && result && result.event === "success") { setFormData(prev => ({ ...prev, [field]: result.info.secure_url })); }
       }
     );
     widget.open();
   };
 
-  // ✅ BUKA MODAL GALERI (Buat Pilih Gambar Lama)
-  const openGallery = (field: 'image' | 'downloadUrl') => {
-    setTargetField(field);
-    setIsGalleryOpen(true);
-  };
+  const openGallery = (field: 'image' | 'downloadUrl') => { setTargetField(field); setIsGalleryOpen(true); };
 
   const previewSkin: Skin = {
     id: "PREVIEW", title: formData.title || "Target Asset Designation", description: formData.description || "Briefing...",
@@ -95,13 +82,7 @@ export default function CreateSkinPage() {
   return (
     <div className="min-h-screen bg-brand-dark pt-24 px-4 pb-12">
       <Script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript" />
-      
-      {/* ✅ MODAL GALERI */}
-      <ImageGalleryModal 
-        isOpen={isGalleryOpen} 
-        onClose={() => setIsGalleryOpen(false)} 
-        onSelect={(url) => setFormData(prev => ({ ...prev, [targetField]: url }))} 
-      />
+      <ImageGalleryModal isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} onSelect={(url) => setFormData(prev => ({ ...prev, [targetField]: url }))} />
 
       <div className="max-w-[1440px] mx-auto">
         <Link href="/dashboard" className="flex items-center gap-2 text-gray-500 hover:text-brand-accent mb-8 transition-all group font-bold uppercase text-xs tracking-[0.2em]">
@@ -155,18 +136,19 @@ export default function CreateSkinPage() {
                     <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source (Preview)</label>
                     <div className="flex gap-4 items-center">
                       <input name="image" type="text" placeholder="URL (https://...)" value={formData.image} onChange={handleInputChange} className={`flex-grow bg-black/40 border ${state.errors?.image ? 'border-red-500' : 'border-white/10'} rounded-lg p-4 text-gray-400 font-medium text-xs focus:border-brand-accent focus:outline-none h-[50px]`} />
-                      
-                      {/* ✅ TOMBOL UPLOAD */}
                       <button type="button" onClick={() => openUploadWidget('image')} className={`${buttonStyle} !bg-white/5 !text-white hover:!bg-white/10 !border-white/10`}><FolderOpen size={18} /> <span className="hidden sm:inline">NEW</span></button>
-                      
-                      {/* ✅ TOMBOL LIBRARY (BUKA MODAL KITA) */}
                       <button type="button" onClick={() => openGallery('image')} className={buttonStyle}><ImageIcon size={18} /> <span className="hidden sm:inline">LIBRARY</span></button>
                     </div>
                     <ErrorMessage error={state.errors?.image} />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Description</label>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em]">Description</label>
+                    </div>
+                    {/* ✅ PRESET COMPONENT */}
+                    <PresetSelector currentDescription={formData.description} onSelect={(val) => setFormData(prev => ({ ...prev, description: val }))} />
+                    
                     <textarea name="description" rows={4} value={formData.description} onChange={handleInputChange} className={`w-full bg-black/40 border ${state.errors?.description ? 'border-red-500' : 'border-white/10'} rounded-lg p-4 text-gray-200 focus:border-brand-accent focus:outline-none`} />
                     <ErrorMessage error={state.errors?.description} />
                   </div>
@@ -188,8 +170,7 @@ export default function CreateSkinPage() {
                     <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> {state.message}
                   </div>
                 )}
-                
-                <SubmitButton />                                      
+                <SubmitButton />
               </form>
             </div>
           </div>
