@@ -21,7 +21,9 @@ export default async function DashboardLayout({
 
   return (
     // PARENT WRAPPER
-    <div className="flex flex-col md:flex-row h-screen w-full bg-[#050505] overflow-hidden text-gray-100 font-sans">
+    // FIX: Ditambah 'pt-28' di mobile biar gak ketutup Navbar Global.
+    // Desktop (md:pt-0) tetep normal karena Sidebar ada di kiri.
+    <div className="flex flex-col md:flex-row h-screen w-full bg-[#050505] overflow-hidden text-gray-100 font-sans pt-28 md:pt-0">
       
       {/* SIDEBAR SECTION */}
       <aside className="flex-shrink-0 w-full md:w-80 z-50 p-2 md:p-4 h-auto md:h-full">
@@ -99,15 +101,12 @@ export default async function DashboardLayout({
       </aside>
 
       {/* MAIN CONTENT SECTION */}
-      {/* UPDATE: Padding dikurangi di mobile (p-2) biar konten lebih lebar */}
       <main className="flex-1 flex flex-col h-full overflow-hidden p-2 pt-0 md:p-4 md:pl-0">
         
         {/* INNER CONTENT CONTAINER */}
-        {/* UPDATE: Rounded dikurangi di mobile (rounded-2xl) biar gak motong konten di pojok */}
         <div className="flex-1 bg-[#0a0a0a]/40 backdrop-blur-xl border border-white/5 rounded-2xl md:rounded-[40px] relative overflow-hidden flex flex-col w-full">
             
             {/* Scrollable Content Area */}
-            {/* UPDATE: Padding dalam dikurangi (p-3) biar form 'Upload' punya ruang napas */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-10 custom-scrollbar w-full">
                  
                  {/* Decorative Background Blob */}
