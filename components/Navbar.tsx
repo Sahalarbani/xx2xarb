@@ -21,11 +21,10 @@ interface NavLinkProps {
 const NavLink: React.FC<NavLinkProps> = ({ href, children, icon: Icon }) => (
   <Link 
     href={href} 
-    className="group relative flex items-center gap-2 px-4 py-2 text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-brand-accent transition-all duration-300"
+    className="group relative flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-400 hover:text-white transition-all duration-300 rounded-full hover:bg-white/5"
   >
-    {Icon && <Icon size={16} className="group-hover:animate-pulse" />}
-    {children}
-    <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-brand-accent shadow-[0_0_10px_#00f0ff] transition-all duration-300 group-hover:w-full" />
+    {Icon && <Icon size={16} className="text-[#00f0ff] group-hover:scale-110 transition-transform" />}
+    <span className="relative z-10 font-rajdhani tracking-wide text-base">{children}</span>
   </Link>
 );
 
@@ -33,39 +32,34 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogin = () => {
-    if (onLogin) {
-      onLogin();
-    } else {
-      // ✅ Login langsung ke Dashboard
-      signIn("google", { callbackUrl: "/dashboard" });
-    }
+    if (onLogin) onLogin();
+    else signIn("google", { callbackUrl: "/dashboard" });
   };
 
   const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      signOut();
-    }
+    if (onLogout) onLogout();
+    else signOut();
   };
 
   return (
-    <nav className="fixed w-full z-[100] top-0 left-0 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <Link href="/" className="flex-shrink-0 cursor-pointer group">
-            <h1 className="font-oxanium text-3xl font-black tracking-tighter text-white transition-all group-hover:drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
-              ARB<span className="text-brand-accent">SKINZ</span>
+    // GLASS HEADER: Ultra blur & transparan
+    <nav className="fixed w-full z-[100] top-0 left-0 border-b border-white/5 bg-[#0a0a0a]/60 backdrop-blur-2xl supports-[backdrop-filter]:bg-[#0a0a0a]/30">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-24">
+          
+          {/* LOGO AREA */}
+          <Link href="/" className="flex-shrink-0 cursor-pointer group relative">
+            <div className="absolute -inset-4 bg-[#00f0ff]/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <h1 className="relative font-oxanium text-3xl font-black tracking-tighter text-white">
+              ARB<span className="text-[#00f0ff] drop-shadow-[0_0_15px_rgba(0,240,255,0.5)]">SKINZ</span>
             </h1>
           </Link>
 
-          {/* Desktop Menu */}
+          {/* DESKTOP MENU - PILL SHAPE */}
           <div className="hidden md:block">
-            <div className="flex items-baseline space-x-2">
+            <div className="flex items-baseline space-x-1 bg-white/5 p-1.5 rounded-full border border-white/5 backdrop-blur-md">
               <NavLink href="/">Home</NavLink>
               <NavLink href="/#about">About</NavLink>
-              
-              {/* ✅ FIX: Cek role 'admin' (huruf kecil) */}
               {user?.role === 'admin' && (
                 <NavLink href="/dashboard" icon={LayoutDashboard}>
                   Dashboard
@@ -74,65 +68,69 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogin, onLogout }) => {
             </div>
           </div>
 
-          {/* Desktop Auth */}
+          {/* DESKTOP AUTH - CIRCULAR & GLOW */}
           <div className="hidden md:block">
             {user ? (
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-5">
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] uppercase font-bold text-gray-500 tracking-tighter">Authorized User</span>
-                  <span className="text-sm font-oxanium text-white">{user.name}</span>
+                  <span className="text-[10px] uppercase font-bold text-[#00f0ff] tracking-widest">Online</span>
+                  <span className="text-sm font-oxanium text-white/90">{user.name}</span>
                 </div>
                 <button 
                   onClick={handleLogout}
-                  className="flex items-center gap-2 bg-red-500/5 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-sm border border-red-500/30 transition-all font-bold uppercase text-xs tracking-widest"
+                  className="p-3 rounded-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/30 transition-all duration-300 hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]"
                 >
-                  <LogOut size={14} />
-                  Terminate
+                  <LogOut size={18} />
                 </button>
               </div>
             ) : (
               <button 
                 onClick={handleLogin}
-                className="group relative flex items-center gap-2 bg-brand-accent/10 hover:bg-brand-accent text-brand-accent hover:text-black px-6 py-2 border border-brand-accent/30 transition-all duration-500 font-oxanium font-bold uppercase text-sm skew-x-[-15deg] overflow-hidden"
+                className="group relative flex items-center gap-3 bg-white/5 hover:bg-[#00f0ff] text-white hover:text-black px-8 py-3 rounded-full border border-white/10 hover:border-[#00f0ff] transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:scale-105 active:scale-95"
               >
-                <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                <span className="flex items-center gap-2 skew-x-[15deg]">
-                  <ShieldCheck size={18} />
-                  System Login
-                </span>
+                <ShieldCheck size={18} className="group-hover:animate-bounce" />
+                <span className="font-oxanium font-bold uppercase text-sm tracking-wider">System Login</span>
+                <div className="absolute inset-0 rounded-full ring-2 ring-white/20 group-hover:ring-transparent transition-all" />
               </button>
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="-mr-2 flex md:hidden">
+          {/* MOBILE TOGGLE */}
+          <div className="flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-brand-accent hover:text-white transition-colors"
+              className="p-3 rounded-full bg-white/5 text-white hover:bg-white/10 active:scale-90 transition-all"
             >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* MOBILE MENU - FLOATING SHEET STYLE */}
       {isOpen && (
-        <div className="md:hidden bg-brand-dark/95 backdrop-blur-2xl border-b border-brand-accent/20">
-          <div className="px-4 pt-2 pb-6 space-y-4">
-            <Link href="/" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">Home</Link>
-            <Link href="/#about" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-white border-b border-white/5">About</Link>
+        <div className="md:hidden absolute top-24 left-4 right-4 bg-[#121212]/90 backdrop-blur-3xl border border-white/10 rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-top-5 fade-in duration-300">
+          <div className="p-6 space-y-2">
+            <Link href="/" className="block px-6 py-4 rounded-2xl text-lg font-oxanium font-bold text-white hover:bg-white/5 transition-colors">Home</Link>
+            <Link href="/#about" className="block px-6 py-4 rounded-2xl text-lg font-oxanium font-bold text-white hover:bg-white/5 transition-colors">About</Link>
             
-            {/* ✅ FIX: Cek role 'admin' (huruf kecil) di Mobile */}
             {user?.role === 'admin' && (
-               <Link href="/dashboard" className="block py-3 text-lg font-oxanium font-bold uppercase tracking-widest text-brand-accent border-b border-brand-accent/10">Admin Control</Link>
+               <Link href="/dashboard" className="block px-6 py-4 rounded-2xl text-lg font-oxanium font-bold text-[#00f0ff] bg-[#00f0ff]/5 border border-[#00f0ff]/20">
+                 Admin Dashboard
+               </Link>
             )}
             
-            <div className="pt-4">
+            <div className="h-px bg-white/5 my-4" />
+            
+            <div className="px-2">
                {user ? (
-                 <button onClick={handleLogout} className="w-full text-center bg-red-500/10 text-red-500 py-4 font-bold uppercase tracking-widest rounded-lg">Logout Session</button>
+                 <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-500/10 text-red-500 py-4 font-bold rounded-2xl hover:bg-red-500 hover:text-white transition-colors">
+                   <LogOut size={18} /> Logout
+                 </button>
                ) : (
-                 <button onClick={handleLogin} className="w-full text-center bg-brand-accent text-black py-4 font-bold uppercase tracking-widest rounded-lg">Access System</button>
+                 <button onClick={handleLogin} className="w-full bg-[#00f0ff] text-black py-4 font-bold font-oxanium uppercase tracking-widest rounded-2xl shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+                   Access System
+                 </button>
                )}
             </div>
           </div>

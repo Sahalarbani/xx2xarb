@@ -2,27 +2,28 @@
 
 import React, { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { updateSkin } from "@/app/lib/actions"; // Panggil fungsi update
+import { updateSkin } from "@/app/lib/actions";
 import { Edit3, Zap, Globe, Lock, ImageIcon, FolderOpen, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Skin } from "@/types"; // Pastikan path type lu bener
 import Script from "next/script";
 
-// Tombol Submit dengan Loading State
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className={`w-full relative bg-brand-accent hover:bg-brand-accent/90 text-black font-oxanium font-bold text-xl py-6 rounded-lg shadow-[0_0_30px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-4 group overflow-hidden ${pending ? 'opacity-70 cursor-wait' : ''}`}>
-      {!pending && <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>}
-      <span className="flex items-center gap-4 relative z-10">
-        {pending ? <><Loader2 size={28} className="animate-spin" /> UPDATING MATRIX...</> : <><Zap size={28} strokeWidth={3} /> CONFIRM UPDATE</>}
+    <button 
+        type="submit" 
+        disabled={pending} 
+        className={`w-full relative bg-[#00f0ff] hover:bg-[#00f0ff]/80 text-black font-oxanium font-black text-xl py-5 rounded-full shadow-[0_0_40px_rgba(0,240,255,0.3)] hover:shadow-[0_0_60px_rgba(0,240,255,0.5)] transition-all flex items-center justify-center gap-4 group overflow-hidden ${pending ? 'opacity-70 cursor-wait' : 'hover:scale-[1.01]'}`}
+    >
+      {!pending && <div className="absolute inset-0 bg-white/40 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-[cubic-bezier(0.19,1,0.22,1)]"></div>}
+      <span className="flex items-center gap-3 relative z-10">
+        {pending ? <><Loader2 size={24} className="animate-spin" /> SYNCHRONIZING...</> : <><Zap size={24} strokeWidth={3} fill="black" /> CONFIRM UPDATE</>}
       </span>
     </button>
   );
 }
 
 export default function EditForm({ skin }: { skin: any }) {
-  // Bind ID ke Server Action biar dia tau skin mana yang diedit
   const updateSkinWithId = updateSkin.bind(null, skin.id);
   const [state, dispatch] = useFormState(updateSkinWithId, { message: null, errors: {} });
   
@@ -40,7 +41,6 @@ export default function EditForm({ skin }: { skin: any }) {
     setFormData((prev: any) => ({ ...prev, [name]: type === 'checkbox' ? e.target.checked : value }));
   };
 
-  // Widget Cloudinary (Sama kayak Create)
   const openWidget = (targetField: 'image' | 'downloadUrl') => {
     const widget = (window as any).cloudinary.createUploadWidget(
       {
@@ -62,67 +62,144 @@ export default function EditForm({ skin }: { skin: any }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pb-20">
       <Script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript" />
       
-      <Link href="/dashboard" className="flex items-center gap-2 text-gray-500 hover:text-brand-accent mb-8 font-bold uppercase text-xs tracking-[0.2em] group">
-        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Cancel Update
+      <Link href="/dashboard" className="inline-flex items-center gap-3 text-gray-500 hover:text-[#00f0ff] mb-8 font-bold uppercase text-xs tracking-[0.2em] group transition-colors">
+        <div className="p-2 rounded-full bg-white/5 group-hover:bg-[#00f0ff]/10 transition-colors">
+             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+        </div>
+        Cancel Sequence
       </Link>
 
-      <div className="bg-brand-surface border border-white/5 rounded-2xl p-10 shadow-2xl relative overflow-hidden">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="p-3 bg-brand-accent/10 rounded-sm border border-brand-accent/20"><Edit3 size={24} className="text-brand-accent" /></div>
-          <div><h1 className="text-3xl font-oxanium font-black text-white uppercase tracking-tighter">Edit Sequence</h1><p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em]">Modify Asset: {skin.id}</p></div>
+      {/* MAIN FORM CARD - GLASS & ROUNDED */}
+      <div className="bg-[#0a0a0a]/60 backdrop-blur-xl border border-white/5 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+        
+        {/* Decorative Glow */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#00f0ff]/5 blur-[100px] pointer-events-none" />
+
+        <div className="flex items-center gap-5 mb-12 relative z-10">
+          <div className="p-4 bg-[#00f0ff]/10 rounded-2xl border border-[#00f0ff]/20 text-[#00f0ff] shadow-[0_0_20px_rgba(0,240,255,0.1)]">
+            <Edit3 size={28} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-oxanium font-black text-white uppercase tracking-tighter">Edit Sequence</h1>
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-1">
+                Target Asset ID: <span className="font-mono text-[#00f0ff]">{skin.id.substring(0,8)}...</span>
+            </p>
+          </div>
         </div>
 
-        <form action={dispatch} className="space-y-8">
-            {/* INPUTS (Sama kayak Create tapi pake Value dari state) */}
-            <div className="space-y-6 p-6 bg-black/20 rounded-xl border border-white/5">
+        <form action={dispatch} className="space-y-8 relative z-10">
+            {/* SECTION 1: CORE DATA */}
+            <div className="space-y-6 p-8 bg-black/20 rounded-[32px] border border-white/5">
                 <div>
-                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Asset Designation</label>
-                    <input name="title" type="text" value={formData.title} onChange={handleInputChange} className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white font-oxanium font-black uppercase tracking-widest" />
+                    <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[0.2em] mb-3 ml-4">Asset Designation</label>
+                    <input 
+                        name="title" 
+                        type="text" 
+                        value={formData.title} 
+                        onChange={handleInputChange} 
+                        className="w-full bg-white/5 hover:bg-white/10 focus:bg-black/40 border border-white/10 focus:border-[#00f0ff] rounded-full px-6 py-4 text-white font-oxanium font-bold text-lg uppercase tracking-wider outline-none transition-all duration-300 placeholder-gray-600 focus:shadow-[0_0_20px_rgba(0,240,255,0.1)]" 
+                    />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Classification</label>
-                        <select name="category" value={formData.category} onChange={handleInputChange} className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-white font-oxanium font-bold uppercase tracking-widest cursor-pointer">
-                            <option value="street">Street</option><option value="racing">Racing</option><option value="drift">Drift</option><option value="rally">Rally</option><option value="custom">Custom</option>
-                        </select>
+                        <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[0.2em] mb-3 ml-4">Classification</label>
+                        <div className="relative">
+                            <select 
+                                name="category" 
+                                value={formData.category} 
+                                onChange={handleInputChange} 
+                                className="w-full bg-white/5 border border-white/10 focus:border-[#00f0ff] rounded-full px-6 py-4 text-white font-oxanium font-bold uppercase tracking-widest cursor-pointer outline-none appearance-none transition-all"
+                            >
+                                <option value="street" className="bg-black text-gray-300">Street</option>
+                                <option value="racing" className="bg-black text-gray-300">Racing</option>
+                                <option value="drift" className="bg-black text-gray-300">Drift</option>
+                                <option value="rally" className="bg-black text-gray-300">Rally</option>
+                                <option value="custom" className="bg-black text-gray-300">Custom</option>
+                            </select>
+                            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">▼</div>
+                        </div>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Status</label>
-                      <div className="flex items-center gap-4 p-4 bg-black/40 border border-white/10 rounded-lg h-[58px]">
+                      <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[0.2em] mb-3 ml-4">Visibility</label>
+                      <div className="flex items-center bg-white/5 border border-white/10 rounded-full p-1 h-[60px]">
                         <input type="hidden" name="published" value={formData.published.toString()} />
-                        <button type="button" onClick={() => setFormData((p: any) => ({ ...p, published: !p.published }))} className={`flex-grow flex items-center justify-center gap-2 px-4 py-2 rounded-sm font-black text-[10px] uppercase tracking-widest transition-all ${formData.published ? 'bg-brand-accent/20 text-brand-accent' : 'bg-white/5 text-gray-500'}`}>
-                          {formData.published ? <Globe size={14} /> : <Lock size={14} />} {formData.published ? 'Public' : 'Private'}
+                        <button 
+                            type="button" 
+                            onClick={() => setFormData((p: any) => ({ ...p, published: !p.published }))} 
+                            className={`flex-grow h-full rounded-full flex items-center justify-center gap-3 font-bold text-xs uppercase tracking-widest transition-all duration-300 ${formData.published ? 'bg-[#00f0ff] text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'bg-transparent text-gray-500 hover:text-white'}`}
+                        >
+                          {formData.published ? <Globe size={16} /> : <Lock size={16} />} 
+                          {formData.published ? 'Public Access' : 'Private / Hidden'}
                         </button>
                       </div>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-6 p-6 bg-black/20 rounded-xl border border-white/5">
+            {/* SECTION 2: ASSETS & LINKS */}
+            <div className="space-y-6 p-8 bg-black/20 rounded-[32px] border border-white/5">
                  <div>
-                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Visual Source</label>
-                    <div className="flex gap-4">
-                        <input name="image" type="text" value={formData.image} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-gray-400 text-xs" />
-                        <button type="button" onClick={() => openWidget('image')} className="px-4 bg-brand-accent/10 border border-brand-accent/30 text-brand-accent rounded-lg"><ImageIcon size={18} /></button>
+                    <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[0.2em] mb-3 ml-4">Visual Source URL</label>
+                    <div className="flex gap-3">
+                        <input 
+                            name="image" 
+                            type="text" 
+                            value={formData.image} 
+                            onChange={handleInputChange} 
+                            className="flex-grow bg-white/5 border border-white/10 focus:border-[#00f0ff] rounded-full px-6 py-4 text-gray-300 text-xs font-mono outline-none transition-all" 
+                        />
+                        <button 
+                            type="button" 
+                            onClick={() => openWidget('image')} 
+                            className="w-14 h-14 flex-shrink-0 bg-[#00f0ff]/10 hover:bg-[#00f0ff] border border-[#00f0ff]/30 text-[#00f0ff] hover:text-black rounded-full flex items-center justify-center transition-all duration-300"
+                        >
+                            <ImageIcon size={20} />
+                        </button>
                     </div>
                  </div>
+                 
                  <div>
-                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Description</label>
-                    <textarea name="description" rows={4} value={formData.description} onChange={handleInputChange} className="w-full bg-black/40 border border-white/10 rounded-lg p-4 text-gray-200" />
+                    <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[0.2em] mb-3 ml-4">Technical Description</label>
+                    <textarea 
+                        name="description" 
+                        rows={5} 
+                        value={formData.description} 
+                        onChange={handleInputChange} 
+                        className="w-full bg-white/5 hover:bg-white/10 focus:bg-black/40 border border-white/10 focus:border-[#00f0ff] rounded-3xl p-6 text-gray-200 font-rajdhani text-sm leading-relaxed outline-none transition-all duration-300 resize-none focus:shadow-[0_0_20px_rgba(0,240,255,0.1)]" 
+                    />
                  </div>
+
                  <div>
-                    <label className="block text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mb-3">Download Link</label>
-                    <div className="flex gap-4">
-                        <input name="downloadUrl" type="text" value={formData.downloadUrl} onChange={handleInputChange} className="flex-grow bg-black/40 border border-white/10 rounded-lg p-4 text-white" />
-                        <button type="button" onClick={() => openWidget('downloadUrl')} className="px-4 bg-brand-accent/10 border border-brand-accent/30 text-brand-accent rounded-lg"><FolderOpen size={18} /></button>
+                    <label className="block text-[10px] font-black text-[#00f0ff] uppercase tracking-[0.2em] mb-3 ml-4">Data Uplink (Download URL)</label>
+                    <div className="flex gap-3">
+                        <input 
+                            name="downloadUrl" 
+                            type="text" 
+                            value={formData.downloadUrl} 
+                            onChange={handleInputChange} 
+                            className="flex-grow bg-white/5 border border-white/10 focus:border-[#00f0ff] rounded-full px-6 py-4 text-gray-300 text-xs font-mono outline-none transition-all" 
+                        />
+                        <button 
+                            type="button" 
+                            onClick={() => openWidget('downloadUrl')} 
+                            className="w-14 h-14 flex-shrink-0 bg-[#00f0ff]/10 hover:bg-[#00f0ff] border border-[#00f0ff]/30 text-[#00f0ff] hover:text-black rounded-full flex items-center justify-center transition-all duration-300"
+                        >
+                            <FolderOpen size={20} />
+                        </button>
                     </div>
                  </div>
             </div>
 
-            {state?.message && <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-500 text-[10px] font-black uppercase tracking-widest">{state.message}</div>}
+            {state?.message && (
+                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-3 text-red-500 text-xs font-bold uppercase tracking-widest animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                    Error: {state.message}
+                </div>
+            )}
+            
             <SubmitButton />
         </form>
       </div>

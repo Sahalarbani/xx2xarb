@@ -51,23 +51,23 @@ export default function PresetSelector({ currentDescription, onSelect }: PresetS
   };
 
   return (
-    <div className="mb-3 relative z-20">
-      <div className="flex gap-2">
-        {/* DROPDOWN */}
+    <div className="mb-4 relative z-20">
+      <div className="flex gap-3">
+        {/* DROPDOWN MAIN WRAPPER */}
         <div className="relative flex-grow">
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full flex items-center justify-between bg-black/40 border border-brand-accent/30 hover:border-brand-accent text-brand-accent px-4 py-2 rounded-lg text-[10px] font-oxanium font-bold uppercase tracking-widest transition-all"
+            className="w-full flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#00f0ff]/50 text-[#00f0ff] px-6 py-3 rounded-full text-xs font-oxanium font-bold uppercase tracking-widest transition-all duration-300 shadow-sm"
           >
             <span className="flex items-center gap-2">
               <FileText size={14} /> LOAD PRESET ({presets.length})
             </span>
-            <ChevronDown size={14} className={`transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
           </button>
 
           {isOpen && (
-            <div className="absolute top-full left-0 w-full mt-2 bg-black border border-brand-accent rounded-lg shadow-[0_0_20px_rgba(0,240,255,0.2)] overflow-hidden max-h-60 overflow-y-auto z-50">
+            <div className="absolute top-full left-0 w-full mt-3 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden max-h-64 overflow-y-auto z-50 animate-in fade-in slide-in-from-top-2 duration-200 p-2">
               {presets.length === 0 ? (
                 <div className="p-4 text-center text-gray-500 text-xs font-mono">NO DATA FOUND</div>
               ) : (
@@ -78,13 +78,13 @@ export default function PresetSelector({ currentDescription, onSelect }: PresetS
                       onSelect(p.content);
                       setIsOpen(false);
                     }}
-                    className="group flex items-center justify-between p-3 hover:bg-brand-accent/10 cursor-pointer border-b border-white/5 last:border-0"
+                    className="group flex items-center justify-between px-4 py-3 hover:bg-white/10 rounded-xl cursor-pointer transition-colors"
                   >
-                    <span className="text-white text-xs font-oxanium truncate">{p.name}</span>
+                    <span className="text-gray-300 group-hover:text-white text-xs font-oxanium truncate">{p.name}</span>
                     <button
                       type="button"
                       onClick={(e) => handleDelete(e, p.id)}
-                      className="text-gray-600 hover:text-red-500 transition-colors p-1"
+                      className="text-gray-600 hover:text-red-500 hover:bg-red-500/10 p-2 rounded-full transition-all"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -95,27 +95,32 @@ export default function PresetSelector({ currentDescription, onSelect }: PresetS
           )}
         </div>
 
-        {/* SAVE BUTTON */}
+        {/* SAVE BUTTON AREA */}
         {!isSaving ? (
           <button
             type="button"
             onClick={() => setIsSaving(true)}
-            className="bg-brand-accent/10 border border-brand-accent/30 text-brand-accent hover:bg-brand-accent hover:text-black px-4 py-2 rounded-lg transition-all"
+            className="bg-white/5 border border-white/10 text-gray-400 hover:bg-[#00f0ff] hover:text-black hover:border-[#00f0ff] w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300"
+            title="Save Current as Preset"
           >
-            <Save size={16} />
+            <Save size={18} />
           </button>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 animate-in slide-in-from-right-5 fade-in">
             <input
               type="text"
               placeholder="NAME..."
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="bg-black/60 border border-brand-accent text-white text-xs px-3 py-2 rounded-lg font-oxanium focus:outline-none w-24 sm:w-32"
+              className="bg-black/40 border border-[#00f0ff]/50 text-white text-xs px-4 py-3 rounded-full font-oxanium focus:outline-none focus:ring-2 focus:ring-[#00f0ff]/20 w-32 md:w-48 placeholder-gray-600"
               autoFocus
             />
-            <button type="button" onClick={handleSave} disabled={loading} className="text-green-500 bg-green-500/10 p-2 rounded-lg border border-green-500/30"><Check size={16} /></button>
-            <button type="button" onClick={() => setIsSaving(false)} className="text-red-500 bg-red-500/10 p-2 rounded-lg border border-red-500/30"><X size={16} /></button>
+            <button type="button" onClick={handleSave} disabled={loading} className="text-[#00f0ff] bg-[#00f0ff]/10 hover:bg-[#00f0ff] hover:text-black w-10 h-10 flex items-center justify-center rounded-full border border-[#00f0ff]/30 transition-all">
+                <Check size={16} />
+            </button>
+            <button type="button" onClick={() => setIsSaving(false)} className="text-red-500 bg-red-500/10 hover:bg-red-500 hover:text-white w-10 h-10 flex items-center justify-center rounded-full border border-red-500/30 transition-all">
+                <X size={16} />
+            </button>
           </div>
         )}
       </div>

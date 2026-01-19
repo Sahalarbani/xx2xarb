@@ -4,23 +4,52 @@
 
 @layer base {
   body {
-    @apply bg-brand-dark text-gray-200;
+    /* Base Dark Background */
+    @apply bg-[#050505] text-gray-200 selection:bg-[#00f0ff] selection:text-black overflow-x-hidden;
+    /* Font Default */
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
 }
 
-.gaming-card-clip {
-  clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%);
+/* --- iOS 26 AMBIENT BACKGROUND --- */
+/* Ini penting agar glassmorphism terlihat "hidup" */
+body::before {
+  content: "";
+  position: fixed;
+  top: -20%;
+  left: -10%;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(120px);
+  z-index: -1;
+  pointer-events: none;
 }
 
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -20%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(100, 50, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(120px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* --- UTILITIES --- */
 .animate-spin-slow {
   animation: spin 3s linear infinite;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Smooth Scrolling for Anchor Links */
+html {
+  scroll-behavior: smooth;
 }

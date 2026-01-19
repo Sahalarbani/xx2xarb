@@ -1,15 +1,15 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { LogIn } from "lucide-react";
 
 export const SignInButton = () => {
   return (
     <button
       onClick={() => signIn("google", { redirectTo: "/dashboard" })}
-      className="w-full bg-white text-gray-900 font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-100 transition-all border border-gray-200 shadow-sm"
+      className="group relative w-full bg-white text-black font-oxanium font-bold text-sm py-4 px-6 rounded-full flex items-center justify-center gap-3 hover:bg-[#00f0ff] transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(0,240,255,0.4)] hover:scale-[1.02]"
     >
-      <svg className="w-5 h-5" viewBox="0 0 24 24">
+      {/* Icon Google Simple */}
+      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
         <path
           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
           fill="#4285F4"
@@ -27,7 +27,7 @@ export const SignInButton = () => {
           fill="#EA4335"
         />
       </svg>
-      Sign in with Google
+      <span className="uppercase tracking-widest">Access with Google</span>
     </button>
   );
 };

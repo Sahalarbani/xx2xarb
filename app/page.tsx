@@ -1,7 +1,7 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { SkinCard } from '@/components/SkinCard';
-import { Search, Zap, Crosshair } from 'lucide-react';
+import { Search, Zap, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 
 // ✅ WAJIB: Biar halaman selalu update kalau ada kategori baru
@@ -14,6 +14,7 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
 
   // ---------------------------------------------------------
   // 1️⃣ LOGIKA DINAMIS: Ambil Kategori Aktif dari Database
+  // (TIDAK DIUBAH SAMA SEKALI)
   // ---------------------------------------------------------
   const dbCategories = await prisma.skin.findMany({
     where: { published: true },
@@ -32,6 +33,7 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
 
   // ---------------------------------------------------------
   // 2️⃣ QUERY DATA SKIN
+  // (TIDAK DIUBAH SAMA SEKALI)
   // ---------------------------------------------------------
   const whereCondition: any = {
     published: true,
@@ -57,105 +59,100 @@ export default async function HomePage({ searchParams }: { searchParams: { q?: s
     orderBy: { createdAt: 'desc' },
   });
 
+  // ---------------------------------------------------------
+  // 3️⃣ RETURN UI (REFACTORED TO iOS 26 STYLE)
+  // ---------------------------------------------------------
   return (
-    <div className="min-h-screen">
-      {/* 2025 Next-Gen Hero Section (DESAIN LU YANG KEREN 🔥) */}
-      <div className="relative h-[85vh] flex items-center justify-center overflow-hidden">
-        {/* Background Image Layer */}
-        <div 
-          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1547919307-1ecb10702e6f?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center scale-105"
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/40 via-brand-dark/80 to-brand-dark"></div>
+    <div className="min-h-screen relative overflow-hidden">
+      
+      {/* BACKGROUND AMBIENT (Untuk Hero Area) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#00f0ff]/10 via-[#0a0a0a] to-[#050505] z-0 pointer-events-none" />
+
+      {/* HERO SECTION */}
+      <div className="relative z-10 pt-40 pb-20 px-4 text-center">
+        
+        {/* Version Badge - Glass Pill */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8 animate-in fade-in zoom-in duration-700">
+          <Zap size={14} className="text-[#00f0ff] fill-[#00f0ff]" />
+          <span className="text-[11px] font-oxanium font-bold text-[#00f0ff] uppercase tracking-[0.2em] shadow-[0_0_10px_rgba(0,240,255,0.4)]">
+            System V2.0 Online
+          </span>
         </div>
 
-        {/* Animated Scanline Overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] animate-pulse"></div>
-        
-        {/* HUD Elements */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-10 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"></div>
-        
-        <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
-          {/* Headline Group */}
-          <div className="mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-brand-accent/10 border border-brand-accent/20 mb-6 animate-bounce">
-              <Zap size={14} className="text-brand-accent" />
-              <span className="text-[10px] font-oxanium font-black text-brand-accent uppercase tracking-[0.3em]">Version 2.0 Deployment</span>
+        {/* Giant Title */}
+        <h1 className="font-oxanium text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter drop-shadow-2xl">
+          NEXT GEN <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-600">
+            LIVERIES
+          </span>
+        </h1>
+
+        <p className="text-lg text-gray-400 font-rajdhani font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
+          High-fidelity skins forged for the <span className="text-[#00f0ff]">TOE3</span> ecosystem. 
+          <br className="hidden md:block"/> Dominance starts with visual superiority.
+        </p>
+
+        {/* GIANT GLASS SEARCH PILL */}
+        <div className="max-w-xl mx-auto relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#00f0ff]/20 to-purple-500/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000" />
+          
+          <form action="/" method="GET" className="relative flex items-center">
+            <div className="absolute left-6 text-gray-400 group-focus-within:text-[#00f0ff] transition-colors">
+              <Search size={24} />
             </div>
             
-            <h1 className="font-oxanium text-6xl md:text-9xl font-black text-white mb-4 leading-[0.85] tracking-tighter uppercase drop-shadow-[0_5px_15px_rgba(0,0,0,0.5)]">
-              NEXT GEN <br /> 
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent via-[#a855f7] to-brand-secondary animate-gradient-x italic">
-                LIVERIES
-              </span>
-            </h1>
-            
-            <p className="text-lg md:text-2xl text-gray-400 font-light max-w-3xl mx-auto uppercase tracking-wider">
-              Dominasi jalanan dengan skin kualitas tertinggi untuk <span className="text-brand-accent font-bold">TOE3</span>
-            </p>
-          </div>
-          
-          {/* HUD Search Bar */}
-          <div className="relative max-w-2xl mx-auto">
-            <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent to-brand-secondary rounded-sm opacity-20 blur"></div>
-            
-            <form action="/" method="GET" className="relative flex items-center bg-black/60 backdrop-blur-2xl border border-white/10 rounded-sm overflow-hidden gaming-card-clip">
-              <div className="pl-6 flex items-center text-brand-accent">
-                <Crosshair size={24} />
-              </div>
-              
-              <input
-                type="text"
-                name="q"
-                defaultValue={query}
-                placeholder="TARGET SKIN PARAMETERS..."
-                className="block w-full pl-4 pr-6 py-6 bg-transparent leading-5 text-white font-oxanium placeholder-gray-600 focus:outline-none sm:text-lg tracking-widest uppercase"
-              />
-
-              <div className="absolute right-0 top-0 bottom-0 px-4 flex items-center gap-2 bg-brand-accent/5 pointer-events-none">
-                <div className="flex flex-col items-end opacity-40">
-                  <span className="text-[8px] font-bold text-brand-accent">STATUS</span>
-                  <span className="text-[10px] font-bold text-white uppercase">Scanning</span>
-                </div>
-              </div>
-            </form>
-          </div>
+            <input
+              type="text"
+              name="q"
+              defaultValue={query}
+              placeholder="SEARCH ASSETS..."
+              className="w-full bg-white/5 hover:bg-white/10 focus:bg-black/40 backdrop-blur-2xl border border-white/10 focus:border-[#00f0ff]/50 rounded-full py-5 pl-16 pr-8 text-white placeholder-gray-500 font-oxanium tracking-widest uppercase outline-none transition-all duration-300 shadow-2xl"
+            />
+          </form>
         </div>
       </div>
 
-      {/* Content Grid */}
-      <div id="gallery" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-brand-accent/50 to-transparent"></div>
+      {/* CONTENT SECTION */}
+      <div id="gallery" className="relative z-10 max-w-7xl mx-auto px-6 pb-32">
         
-        {/* ✅ DYNAMIC FILTERS (OTAK BARU) */}
-        <div className="flex flex-wrap justify-center gap-4 mb-20">
+        {/* SEPARATOR */}
+        <div className="flex items-center justify-center gap-4 mb-12 opacity-30">
+          <div className="h-px w-24 bg-gradient-to-r from-transparent to-white" />
+          <LayoutGrid size={16} className="text-white" />
+          <div className="h-px w-24 bg-gradient-to-l from-transparent to-white" />
+        </div>
+
+        {/* CAPSULE TABS FILTERS */}
+        <div className="flex flex-wrap justify-center gap-3 mb-16">
           {allCategories.map((cat) => {
-            // Cek apakah tombol ini lagi aktif (case-insensitive)
             const isActive = categoryFilter.toUpperCase() === cat.toUpperCase();
-            
             return (
               <Link
                 key={cat}
-                href={`/?category=${cat === 'ALL' ? '' : cat}&q=${query}`} // Kalau ALL, kosongin query category
-                className={`relative px-8 py-3 font-oxanium font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 skew-x-[-15deg] border
+                href={`/?category=${cat === 'ALL' ? '' : cat}&q=${query}`}
+                className={`
+                  relative px-6 py-2.5 rounded-full font-oxanium font-bold text-xs uppercase tracking-wider transition-all duration-300
                   ${isActive 
-                    ? 'bg-brand-accent text-black shadow-[0_0_25px_rgba(0,240,255,0.4)] border-brand-accent' 
-                    : 'bg-brand-surface/50 text-gray-500 border-white/5 hover:border-brand-accent/50 hover:text-brand-accent'
+                    ? 'bg-[#00f0ff] text-black shadow-[0_0_20px_rgba(0,240,255,0.4)] scale-105' 
+                    : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-white/10 hover:text-white hover:border-white/20'
                   }
                 `}
               >
-                <span className="inline-block skew-x-[15deg]">{cat}</span>
+                {cat}
               </Link>
             );
           })}
         </div>
 
+        {/* GRID LAYOUT */}
         {skins.length === 0 ? (
-          <div className="text-center py-32 border border-dashed border-white/10 rounded-3xl">
-            <p className="text-3xl font-oxanium font-black text-gray-700 uppercase italic">Target Not Found</p>
-            <p className="text-gray-500 mt-4 tracking-widest uppercase text-sm">Modify search parameters and re-scan.</p>
+          <div className="flex flex-col items-center justify-center py-32 bg-white/5 rounded-[32px] border border-white/5 border-dashed backdrop-blur-sm">
+            <Search size={48} className="text-gray-600 mb-4 opacity-50" />
+            <p className="text-2xl font-oxanium font-bold text-gray-500 uppercase">No Data Found</p>
+            <p className="text-gray-600 mt-2 font-rajdhani">Try adjusting your search parameters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {skins.map(skin => (
               <SkinCard 
                 key={skin.id} 
